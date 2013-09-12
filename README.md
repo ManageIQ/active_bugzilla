@@ -20,7 +20,7 @@ Or install it yourself as:
 
   If not already logged in to bugzilla, RubyBugzilla can login using
   the crendentials in bugzilla_credentials.yaml
-  Copy config/bugzilla_credentials.yaml to $HOME and edit the file
+  Copy sample/bugzilla_credentials.yaml to $HOME and edit the file
   to contain your bugzilla credentials.
 
   TODO: Write more usage instructions here
