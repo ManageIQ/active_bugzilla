@@ -5,10 +5,10 @@ class RubyBugzilla
 
   CMD = '/usr/bin/bugzilla'
   COOKIES_FILE = File.expand_path('~') + '/.bugzillacookies'
-  CREDS_FILE = File.expand_path('~') + '/bugzilla_credentials.yaml'
+  CREDS_FILE = File.expand_path('~') + '/.bugzilla_credentials.yaml'
 
-  # Ruby will catch and raise Erron::ENOENT: If there the user does not
-  # have a ~/bugzilla_credentials.yaml file.
+  # Ruby will catch and raise Erron::ENOENT: if there is no
+  # ~/.bugzilla_credentials.yaml file.
   def self.credentials
     begin
       creds = YAML.load_file(CREDS_FILE)
@@ -48,9 +48,9 @@ class RubyBugzilla
   end
 
   def self.login!
-
-    login_cmd = login_cmd_no_pw = "#{CMD} "
-    output = "Nothing Run"
+    login_cmd = "#{CMD} "
+    output = "Already Logged In"
+    params = {}
 
     raise "Please install python-bugzilla" unless
       File.exists?(File.expand_path(CMD))
@@ -59,21 +59,22 @@ class RubyBugzilla
       username, password = self.credentials
       uri_opt, debug_opt = self.options
 
-      login_cmd << "--bugzilla=#{uri_opt}/xmlrpc.cgi " unless uri_opt.nil?
-      login_cmd << "--debug " unless debug_opt.nil?
-      login_cmd << "login #{username} #{password} "
+      params["--bugzilla="] = "#{uri_opt}/xmlrpc.cgi" unless uri_opt.nil?
+      params["--debug"]     = nil unless (debug_opt.nil? || debug_opt == false)
+      params["login"]       = [username, password]
 
-      # Preserve the command without the password for logging.
-      login_cmd_no_pw = login_cmd.sub(password, '********')
-      login_cmd_result = LinuxAdmin::run(login_cmd)
-      unless login_cmd_result.exit_status == 0
+      begin 
+        login_cmd_result = LinuxAdmin.run!(CMD, :params => params)
+      rescue => error
         # A failed login attempt could result in a corrupt COOKIES_FILE
         clear_login!
-        raise "#{login_cmd_no_pw} Failed.\n #{login_cmd_result.error}"
+        # Preserve the command without the password for logging.
+        command_str = self.string_command(CMD, params, password)
+        raise "#{self.string_command(CMD, params, password)} Failed.\n#{error}"
       end
       output = login_cmd_result.output
     end
-    [login_cmd_no_pw, output]
+    [self.string_command(CMD, params, password), output]
   end
 
   def self.query(product, flag=nil, bug_status=nil, output_format=nil)
@@ -83,18 +84,34 @@ class RubyBugzilla
 
     raise "Please specify a product" unless not product.nil?
 
-    query_cmd = "#{CMD} query "
-    query_cmd << "--product=\'#{product}\' "
-    query_cmd << "--flag=\'#{flag}\' " unless flag.nil?
-    query_cmd << "--bug_status=\'#{bug_status}\' " unless bug_status.nil?
-    query_cmd << "--outputformat=\'#{output_format}\' " unless
-      output_format.nil?
+    params = {}
+    params["query"]           = nil
+    params["--product="]      = product
+    params["--flag="]         = flag unless flag.nil?
+    params["--bug_status="]   = bug_status unless bug_status.nil?
+    params["--outputformat="] = output_format unless output_format.nil?
 
-    query_cmd_result = LinuxAdmin::run(query_cmd)
+    begin 
+      query_cmd_result = LinuxAdmin.run!(CMD, :params => params)
+    rescue => error
+      raise "#{self.string_command(CMD, params)} Failed.\n#{error}"
+    end
 
-    raise "#{query_cmd} Failed.\n #{query_cmd_result.error}" unless
-      query_cmd_result.exit_status == 0
-
-    [query_cmd, query_cmd_result.output]
+    [self.string_command(CMD, params), query_cmd_result.output]
   end
+
+  def self.string_command(cmd, params = {}, password=nil)
+    scrubbed_str = str = ""
+    str << cmd
+    params.each do |param, value|
+      if value.kind_of?(Array)
+        str << " #{param} \"#{value.join(" ")}\" "
+      else
+        str << " #{param}\"#{value}\" "
+      end
+    end
+    scrubbed_str = str.sub(password, "********") unless password.nil?
+    scrubbed_str
+  end
+
 end

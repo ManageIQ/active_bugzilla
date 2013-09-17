@@ -100,14 +100,24 @@ describe RubyBugzilla do
       # Fake the command, cookies file and credentials file.
       TempCredFile.open('ruby_bugzilla_spec') do |file|
         ignore_warnings do
+          RubyBugzilla::CREDS_FILE = file.path
           RubyBugzilla::CMD = '/bin/echo'
+          RubyBugzilla::COOKIES_FILE = '/This/file/does/not/exist'
         end
-        cmd, output = RubyBugzilla.query("MyProduct")
+
+        cmd, output = RubyBugzilla.login!
+        cmd, output = RubyBugzilla.query('CloudForms Management Engine',
+          flag = '',
+          bug_status = 'NEW, ASSIGNED, POST, MODIFIED, ON_DEV, ON_QA, VERIFIED, RELEASE_PENDING',
+          output_format = 'BZ_ID: %{id} STATUS: %{bug_status} SUMMARY: %{summary}')
+
         file.unlink unless file.nil?
-        output.should include("query --product=MyProduct")
+        cmd.should include("query")
+        output.should include("BZ_ID:")
+        output.should include("STATUS:")
+        output.should include("SUMMARY:")
       end
     end
-
   end
 
   context "#credentials" do
