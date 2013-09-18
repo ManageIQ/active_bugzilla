@@ -52,15 +52,14 @@ class RubyBugzilla
     output = "Already Logged In"
     params = {}
 
-    raise "Please install python-bugzilla" unless
-      File.exists?(File.expand_path(CMD))
+    raise "Please install python-bugzilla" unless File.exists?(File.expand_path(CMD))
 
     unless self.logged_in?
       username, password = self.credentials
       uri_opt, debug_opt = self.options
 
       params["--bugzilla="] = "#{uri_opt}/xmlrpc.cgi" unless uri_opt.nil?
-      params["--debug"]     = nil unless (debug_opt.nil? || debug_opt == false)
+      params["--debug"]     = nil if debug_opt
       params["login"]       = [username, password]
 
       begin 
@@ -68,8 +67,6 @@ class RubyBugzilla
       rescue => error
         # A failed login attempt could result in a corrupt COOKIES_FILE
         clear_login!
-        # Preserve the command without the password for logging.
-        command_str = self.string_command(CMD, params, password)
         raise "#{self.string_command(CMD, params, password)} Failed.\n#{error}"
       end
       output = login_cmd_result.output
@@ -82,7 +79,7 @@ class RubyBugzilla
     raise "Please install python-bugzilla" unless
       File.exists?(File.expand_path(CMD))
 
-    raise "Please specify a product" unless not product.nil?
+    raise ArgumentError, "product cannot be nil" if product.nil?
 
     params = {}
     params["query"]           = nil
@@ -100,6 +97,7 @@ class RubyBugzilla
     [self.string_command(CMD, params), query_cmd_result.output]
   end
 
+  private
   def self.string_command(cmd, params = {}, password=nil)
     scrubbed_str = str = ""
     str << cmd

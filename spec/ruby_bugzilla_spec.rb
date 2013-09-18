@@ -93,7 +93,7 @@ describe RubyBugzilla do
       ignore_warnings do
         RubyBugzilla::CMD = '/bin/echo'
       end
-      expect{RubyBugzilla.query}.to raise_exception
+      expect{RubyBugzilla.query}.to raise_error(ArgumentError)
     end
 
     it "when the bugzilla query command produces output" do
