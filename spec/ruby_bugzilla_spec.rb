@@ -121,14 +121,14 @@ describe RubyBugzilla do
   end
 
   context "#credentials" do
-    it "when the bugzilla command is not found" do
+    it "when the YAML input file is not found" do
       ignore_warnings do
         RubyBugzilla::CREDS_FILE = '/This/cmd/does/not/exist'
       end
       expect{RubyBugzilla.credentials}.to raise_exception
     end
 
-    it "when the YAML input is invalid" do
+    it "when the YAML input is valid" do
       # Fake the credentials YAML file.
       TempCredFile.open('ruby_bugzilla_spec') do |file|
         ignore_warnings do
@@ -138,6 +138,28 @@ describe RubyBugzilla do
         un.should == "My Username"
         pw.should == "My Password"
       end
+    end
+  end
+
+  context "#options" do
+    it "when the YAML input is valid" do
+      # Fake the credentials YAML file.
+      TempCredFile.open('ruby_bugzilla_spec') do |file|
+        ignore_warnings do
+          RubyBugzilla::CREDS_FILE = file.path
+        end
+        uri, debug = RubyBugzilla.options
+        uri.should == "MyURI"
+        debug.should == "MyDebug"
+      end
+    end
+    it "when the YAML input is is not found" do
+      ignore_warnings do
+        RubyBugzilla::CREDS_FILE = '/This/cmd/does/not/exist'
+      end
+      uri, debug = RubyBugzilla.options
+      uri.should == "https://bugzilla.redhat.com/"
+      debug.should == false
     end
   end
 

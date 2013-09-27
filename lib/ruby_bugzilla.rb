@@ -29,7 +29,7 @@ class RubyBugzilla
     begin
       options = YAML.load_file(CREDS_FILE)
     rescue Errno::ENOENT => error
-      return nil
+      return ["https://bugzilla.redhat.com/", false]
     end
     [options[:bugzilla_options][:bugzilla_uri],
       options[:bugzilla_options][:debug]]
