@@ -68,29 +68,23 @@ describe RubyBugzilla do
     end
 
     it "when the bugzilla login command produces output" do
-      # Fake the command, cookies file and credentials file.
-      TempCredFile.open('ruby_bugzilla_spec') do |file|
-        ignore_warnings do
-          RubyBugzilla::CREDS_FILE = file.path
-          RubyBugzilla::CMD = '/bin/echo'
-          RubyBugzilla::COOKIES_FILE = '/This/file/does/not/exist'
-        end
-        cmd, output = RubyBugzilla.login!
-        output.should include("login My Username My Password")
+      # Fake the command and cookies file.
+      ignore_warnings do
+        RubyBugzilla::CMD = '/bin/echo'
+        RubyBugzilla::COOKIES_FILE = '/This/file/does/not/exist'
       end
+      cmd, output = RubyBugzilla.login!("My Username", "My Password")
+      output.should include("login My Username My Password")
     end
 
     it "when the bugzilla login command produces output with arguments" do
-      # Fake the command, cookies file and credentials file.
-      TempCredFile.open('ruby_bugzilla_spec') do |file|
-        ignore_warnings do
-          RubyBugzilla::CREDS_FILE = file.path
-          RubyBugzilla::CMD = '/bin/echo'
-          RubyBugzilla::COOKIES_FILE = '/This/file/does/not/exist'
-        end
-        cmd, output = RubyBugzilla.login!("calvin", "hobbes")
-        output.should include("login calvin hobbes")
+      # Fake the command and cookies file.
+      ignore_warnings do
+        RubyBugzilla::CMD = '/bin/echo'
+        RubyBugzilla::COOKIES_FILE = '/This/file/does/not/exist'
       end
+      cmd, output = RubyBugzilla.login!("calvin", "hobbes")
+      output.should include("login calvin hobbes")
     end
 
   end
@@ -112,27 +106,24 @@ describe RubyBugzilla do
     end
 
     it "when the bugzilla query command produces output" do
-      # Fake the command, cookies file and credentials file.
-      TempCredFile.open('ruby_bugzilla_spec') do |file|
+      # Fake the command and cookies file.
         ignore_warnings do
-          RubyBugzilla::CREDS_FILE = file.path
           RubyBugzilla::CMD = '/bin/echo'
           RubyBugzilla::COOKIES_FILE = '/This/file/does/not/exist'
         end
 
-        cmd, output = RubyBugzilla.login!
+        cmd, output = RubyBugzilla.login!("calvin", "hobbes")
         cmd, output = RubyBugzilla.query('CloudForms Management Engine',
           flag = '',
           bug_status = 'NEW, ASSIGNED, POST, MODIFIED, ON_DEV, ON_QA, VERIFIED, RELEASE_PENDING',
           output_format = 'BZ_ID: %{id} STATUS: %{bug_status} SUMMARY: %{summary}')
 
-        file.unlink unless file.nil?
         cmd.should include("query")
         output.should include("BZ_ID:")
         output.should include("STATUS:")
         output.should include("SUMMARY:")
-      end
     end
+
   end
 
   context "#credentials_from_file" do
@@ -184,24 +175,44 @@ describe RubyBugzilla do
       ignore_warnings do
         RubyBugzilla::CREDS_FILE = '/This/cmd/does/not/exist'
       end
-      RubyBugzilla.username = "test_un"
-      RubyBugzilla.password = "test_pw"
-      un, pw = RubyBugzilla.credentials
+      un, pw = RubyBugzilla.credentials("test_un", "test_pw")
       un.should == "test_un"
       pw.should == "test_pw"
     end
 
-    it "with arguments and when the YAML input is valid" do
+    it "with arguments and valid YAML input, favor arguments" do
       # Fake the credentials YAML file.
       TempCredFile.open('ruby_bugzilla_spec') do |file|
         ignore_warnings do
           RubyBugzilla::CREDS_FILE = file.path
         end
-        RubyBugzilla.username = "test_un"
-        RubyBugzilla.password = "test_pw"
-        un, pw = RubyBugzilla.credentials
+        un, pw = RubyBugzilla.credentials("test_un", "test_pw")
         un.should == "test_un"
         pw.should == "test_pw"
+      end
+    end
+
+    it "with password argument and valid YAML input, favor argument" do
+      # Fake the credentials YAML file.
+      TempCredFile.open('ruby_bugzilla_spec') do |file|
+        ignore_warnings do
+          RubyBugzilla::CREDS_FILE = file.path
+        end
+        un, pw = RubyBugzilla.credentials(nil, "test_pw")
+        un.should == "My Username"
+        pw.should == "test_pw"
+      end
+    end
+
+    it "with username argument and valid YAML input, favor argument" do
+      # Fake the credentials YAML file.
+      TempCredFile.open('ruby_bugzilla_spec') do |file|
+        ignore_warnings do
+          RubyBugzilla::CREDS_FILE = file.path
+        end
+        un, pw = RubyBugzilla.credentials("test_un")
+        un.should == "test_un"
+        pw.should == "My Password"
       end
     end
 

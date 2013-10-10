@@ -7,30 +7,31 @@ class RubyBugzilla
   COOKIES_FILE = File.expand_path('~') + '/.bugzillacookies'
   CREDS_FILE = File.expand_path('~') + '/.bugzilla_credentials.yaml'
 
-  @@username = nil
-  @@password = nil
-
   def self.username=(un)
-    @@username = un
+    @username = un
   end
 
   def self.username
-    @@username
+    @username
   end
 
   def self.password=(pw)
-    @@password = pw
+    @password = pw
   end
 
   def self.password
-    @@password
+    @password
   end
 
-  def self.credentials
-    un_from_file, pw_from_file = self.credentials_from_file
+  def self.credentials(username = nil, password = nil)
+    self.username = username
+    self.password = password
 
-    self.username = un_from_file unless self.username
-    self.password = pw_from_file unless self.password
+    if self.username.nil? || self.password.nil?
+      un_from_file, pw_from_file = self.credentials_from_file
+      self.username ||= un_from_file
+      self.password ||= pw_from_file
+    end
 
     [self.username, self.password]
   end
@@ -71,8 +72,6 @@ class RubyBugzilla
   end
 
   def self.login!(username = nil, password = nil)
-    self.username = username unless username.nil?
-    self.password = password unless password.nil?
 
     login_cmd = "#{CMD} "
     output = "Already Logged In"
@@ -81,7 +80,7 @@ class RubyBugzilla
     raise "Please install python-bugzilla" unless File.exists?(File.expand_path(CMD))
 
     unless self.logged_in?
-      username, password = self.credentials
+      username, password = self.credentials(username, password)
       uri_opt, debug_opt = self.options
 
       params["--bugzilla="] = "#{uri_opt}/xmlrpc.cgi" unless uri_opt.nil?
