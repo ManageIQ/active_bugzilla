@@ -7,18 +7,42 @@ class RubyBugzilla
   COOKIES_FILE = File.expand_path('~') + '/.bugzillacookies'
   CREDS_FILE = File.expand_path('~') + '/.bugzilla_credentials.yaml'
 
+  def self.username=(un)
+    @username = un
+  end
+
+  def self.username
+    @username
+  end
+
+  def self.password=(pw)
+    @password = pw
+  end
+
+  def self.password
+    @password
+  end
+
+  def self.credentials(username = nil, password = nil)
+    self.username = username
+    self.password = password
+
+    if self.username.nil? || self.password.nil?
+      un_from_file, pw_from_file = self.credentials_from_file
+      self.username ||= un_from_file
+      self.password ||= pw_from_file
+    end
+
+    [self.username, self.password]
+  end
+
   # Ruby will catch and raise Erron::ENOENT: if there is no
   # ~/.bugzilla_credentials.yaml file.
-  def self.credentials
+  def self.credentials_from_file
     begin
       creds = YAML.load_file(CREDS_FILE)
     rescue Errno::ENOENT => error
-      raise "#{error.message}\n" +
-        "Please create file: #{CREDS_FILE} with valid credentials."
-    end
-    if creds[:bugzilla_credentials][:username].nil? ||
-      creds[:bugzilla_credentials][:password].nil? then
-      raise "Missing username or password in file: #{CREDS_FILE}."
+      return [nil, nil]
     end
 
     [creds[:bugzilla_credentials][:username],
@@ -29,7 +53,7 @@ class RubyBugzilla
     begin
       options = YAML.load_file(CREDS_FILE)
     rescue Errno::ENOENT => error
-      return nil
+      return ["https://bugzilla.redhat.com/", false]
     end
     [options[:bugzilla_options][:bugzilla_uri],
       options[:bugzilla_options][:debug]]
@@ -47,7 +71,8 @@ class RubyBugzilla
     end
   end
 
-  def self.login!
+  def self.login!(username = nil, password = nil)
+
     login_cmd = "#{CMD} "
     output = "Already Logged In"
     params = {}
@@ -55,7 +80,7 @@ class RubyBugzilla
     raise "Please install python-bugzilla" unless File.exists?(File.expand_path(CMD))
 
     unless self.logged_in?
-      username, password = self.credentials
+      username, password = self.credentials(username, password)
       uri_opt, debug_opt = self.options
 
       params["--bugzilla="] = "#{uri_opt}/xmlrpc.cgi" unless uri_opt.nil?
@@ -81,7 +106,11 @@ class RubyBugzilla
 
     raise ArgumentError, "product cannot be nil" if product.nil?
 
+    uri_opt, debug_opt = self.options
+
     params = {}
+
+    params["--bugzilla="]     = "#{uri_opt}/xmlrpc.cgi" unless uri_opt.nil?
     params["query"]           = nil
     params["--product="]      = product
     params["--flag="]         = flag unless flag.nil?

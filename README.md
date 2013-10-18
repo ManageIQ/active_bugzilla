@@ -1,5 +1,12 @@
 # RubyBugzilla
 
+
+[![Gem Version](https://badge.fury.io/rb/ruby_bugzilla.png)](http://badge.fury.io/rb/ruby_bugzilla)
+[![Build Status](https://travis-ci.org/ManageIQ/ruby_bugzilla.png)](https://travis-ci.org/ManageIQ/ruby_bugzilla)
+[![Code Climate](https://codeclimate.com/github/ManageIQ/ruby_bugzilla.png)](https://codeclimate.com/github/ManageIQ/ruby_bugzilla)
+[![Coverage Status](https://coveralls.io/repos/ManageIQ/ruby_bugzilla/badge.png?branch=master)](https://coveralls.io/r/ManageIQ/ruby_bugzilla)
+[![Dependency Status](https://gemnasium.com/ManageIQ/ruby_bugzilla.png)](https://gemnasium.com/ManageIQ/ruby_bugzilla)
+
 A Ruby wrapper around the python-bugzilla CLI for easy access to the Bugzilla API
 
 ## Installation
