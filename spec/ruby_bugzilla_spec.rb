@@ -126,6 +126,67 @@ describe RubyBugzilla do
 
   end
 
+  context "#modify" do
+
+    it "when the bugzilla command is not found" do
+      ignore_warnings do
+        RubyBugzilla::CMD = '/This/cmd/does/not/exist'
+      end
+      expect{RubyBugzilla.modify}.to raise_exception
+    end
+
+    it "when no product is specified" do
+      ignore_warnings do
+        RubyBugzilla::CMD = '/bin/echo'
+      end
+      expect{RubyBugzilla.modify}.to raise_error(ArgumentError)
+    end
+
+    it "when the bugzilla modify command produces output for one option and multiple BZs" do
+      # Fake the command and cookies file.
+        ignore_warnings do
+          RubyBugzilla::CMD = '/bin/echo'
+          RubyBugzilla::COOKIES_FILE = '/This/file/does/not/exist'
+        end
+
+        cmd, output = RubyBugzilla.login!("calvin", "hobbes")
+        cmd, output = RubyBugzilla.modify(
+          options = ["--status=RELEASE_PENDING"],
+          bugids = ["948970", "948971", "948972", "948973"])
+
+        cmd.should include("modify")
+        cmd.should include("--status=\"RELEASE_PENDING\"")
+        cmd.should include("948970")
+        cmd.should include("948971")
+        cmd.should include("948972")
+        cmd.should include("948973")
+
+        output.should include("948970")
+        output.should include("948971")
+        output.should include("948972")
+        output.should include("948973")
+    end
+
+    it "when the bugzilla modify command produces output for multiple options and a single BZ" do
+      # Fake the command and cookies file.
+        ignore_warnings do
+          RubyBugzilla::CMD = '/bin/echo'
+          RubyBugzilla::COOKIES_FILE = '/This/file/does/not/exist'
+        end
+
+        cmd, output = RubyBugzilla.login!("calvin", "hobbes")
+        cmd, output = RubyBugzilla.modify(
+          options = ["--status=POST", "--comment=\"Fixed in shabla\""],
+          bugids = ["948972"])
+
+        cmd.should include("modify")
+        cmd.should include("--status=\"POST\"")
+        cmd.should include("948972")
+
+        output.should include("948972")
+    end
+
+  end
   context "#credentials_from_file" do
     it "when the YAML input file is not found" do
       ignore_warnings do
