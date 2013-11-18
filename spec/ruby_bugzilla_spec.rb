@@ -135,11 +135,25 @@ describe RubyBugzilla do
       expect{RubyBugzilla.modify}.to raise_exception
     end
 
-    it "when no product is specified" do
+    it "when no arguments are specified" do
       ignore_warnings do
         RubyBugzilla::CMD = '/bin/echo'
       end
       expect{RubyBugzilla.modify}.to raise_error(ArgumentError)
+    end
+
+    it "when no bugids are are specified" do
+      ignore_warnings do
+        RubyBugzilla::CMD = '/bin/echo'
+      end
+      expect{RubyBugzilla.modify("", :status => "POST")}.to raise_error(ArgumentError)
+    end
+
+    it "when no options are specified" do
+      ignore_warnings do
+        RubyBugzilla::CMD = '/bin/echo'
+      end
+      expect{RubyBugzilla.modify(9, {}) }.to raise_error(ArgumentError)
     end
 
     it "when the bugzilla modify command produces output for one option and multiple BZs" do
@@ -150,9 +164,8 @@ describe RubyBugzilla do
         end
 
         cmd, output = RubyBugzilla.login!("calvin", "hobbes")
-        cmd, output = RubyBugzilla.modify(
-          options = ["--status=RELEASE_PENDING"],
-          bugids = ["948970", "948971", "948972", "948973"])
+        cmd, output = RubyBugzilla.modify(["948970", "948971", "948972", "948973"],
+          :status => "RELEASE_PENDING")
 
         cmd.should include("modify")
         cmd.should include("--status=\"RELEASE_PENDING\"")
@@ -167,7 +180,7 @@ describe RubyBugzilla do
         output.should include("948973")
     end
 
-    it "when the bugzilla modify command produces output for multiple options and a single BZ" do
+    it "when the bugzilla modify command produces output for multiple options and a Array BZ" do
       # Fake the command and cookies file.
         ignore_warnings do
           RubyBugzilla::CMD = '/bin/echo'
@@ -175,9 +188,44 @@ describe RubyBugzilla do
         end
 
         cmd, output = RubyBugzilla.login!("calvin", "hobbes")
-        cmd, output = RubyBugzilla.modify(
-          options = ["--status=POST", "--comment=\"Fixed in shabla\""],
-          bugids = ["948972"])
+        cmd, output = RubyBugzilla.modify(bugids = ["948972"],
+          options = {:status => "POST", :comment => "Fixed in shabla"})
+
+        cmd.should include("modify")
+        cmd.should include("--status=\"POST\"")
+        cmd.should include("948972")
+        cmd.should include("Fixed in shabla")
+
+        output.should include("948972")
+        output.should include("Fixed in shabla")
+    end
+
+    it "when the bugzilla modify command produces output for a Fixnum BZ" do
+      # Fake the command and cookies file.
+        ignore_warnings do
+          RubyBugzilla::CMD = '/bin/echo'
+          RubyBugzilla::COOKIES_FILE = '/This/file/does/not/exist'
+        end
+
+        cmd, output = RubyBugzilla.login!("calvin", "hobbes")
+        cmd, output = RubyBugzilla.modify(948972, :status => "POST")
+
+        cmd.should include("modify")
+        cmd.should include("--status=\"POST\"")
+        cmd.should include("948972")
+
+        output.should include("948972")
+    end
+
+    it "when the bugzilla modify command produces output for a String BZ" do
+      # Fake the command and cookies file.
+        ignore_warnings do
+          RubyBugzilla::CMD = '/bin/echo'
+          RubyBugzilla::COOKIES_FILE = '/This/file/does/not/exist'
+        end
+
+        cmd, output = RubyBugzilla.login!("calvin", "hobbes")
+        cmd, output = RubyBugzilla.modify("948972", :status => "POST")
 
         cmd.should include("modify")
         cmd.should include("--status=\"POST\"")

@@ -130,35 +130,38 @@ class RubyBugzilla
   #
   # Example Usage:
   #
-  #  Valid options are those supported by python-bugzilla
+  #  bugids can be an Array of bug ids, a String or Fixnum
+  #  containing a single bug id 
+  #
+  #  options are a hash of options supported by python-bugzilla
   #
   #  Set the status of multiple bugs to RELEASE_PENDING:
-  #  RubyBugzilla.modify(options = ["--status=RELEASE_PENDING"],
-  #    bugids = ["948970", "948971", "948972", "948973"])
+  #  RubyBugzilla.modify([948970, 948971], :status => "RELEASE_PENDING")
   #
-  #  Set the status to POST and a commited in SHA1 comment
-  #  RubyBugzilla.modify(options = ["--status=POST", "--comment=\"Fixed in shabla\""],
-  #    bugids = ["948970"])
+  #  Add a comment
+  #  RubyBugzilla.modify("948972", :comment => "whatevs")
   #
-
-  def self.modify(options, bugids)
+  #  Set the status to POST and add a comment
+  #  RubyBugzilla.modify(948970, :status => "POST", :comment => "Fixed in shabla")
+  #
+  def self.modify(bugids_arg, options)
 
     raise "Please install python-bugzilla" unless
       File.exists?(File.expand_path(CMD))
 
-    if bugids.none? or options.none?
-      raise ArgumentError, "bugids and options arrays must be specified"
+    bugids = Array(bugids_arg)
+    if bugids.empty? or options.empty? or bugids_arg.to_s.empty?
+      raise ArgumentError, "bugids and options must be specified"
     end
 
     uri_opt, debug_opt = self.options
-
     params = {}
 
     params["--bugzilla="]     = "#{uri_opt}/xmlrpc.cgi" unless uri_opt.nil?
     params["modify"]          = nil
 
-    self.set_params_options(params, options)
     self.set_params_bugids(params, bugids)
+    self.set_params_options(params, options)
 
     begin 
       modify_cmd_result = LinuxAdmin.run!(CMD, :params => params)
@@ -171,10 +174,8 @@ class RubyBugzilla
 
   private
   def self.set_params_options(params, options)
-    options.each do |option_str|
-      option, match, value = option_str.rpartition('=')
-      option << match
-      params[option] = value
+    options.each do |key,value|
+      params["--#{key}="] = value
     end
   end
 
