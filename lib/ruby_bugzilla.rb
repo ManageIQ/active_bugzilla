@@ -146,11 +146,10 @@ class RubyBugzilla
   #
   def self.modify(bugids_arg, options)
 
-    raise "Please install python-bugzilla" unless
-      File.exists?(File.expand_path(CMD))
+    raise "Please install python-bugzilla" unless File.exists?(File.expand_path(CMD))
 
     bugids = Array(bugids_arg)
-    if bugids.empty? or options.empty? or bugids_arg.to_s.empty?
+    if bugids.empty? || options.empty? || bugids_arg.to_s.empty?
       raise ArgumentError, "bugids and options must be specified"
     end
 
@@ -169,7 +168,7 @@ class RubyBugzilla
       raise "#{self.string_command(CMD, params)} Failed.\n#{error}"
     end
 
-    [self.string_command(CMD, params), modify_cmd_result.output]
+    self.string_command(CMD, params)
   end
 
   private
