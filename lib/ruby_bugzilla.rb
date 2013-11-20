@@ -126,6 +126,65 @@ class RubyBugzilla
     [self.string_command(CMD, params), query_cmd_result.output]
   end
 
+
+  #
+  # Example Usage:
+  #
+  #  bugids can be an Array of bug ids, a String or Fixnum
+  #  containing a single bug id 
+  #
+  #  options are a hash of options supported by python-bugzilla
+  #
+  #  Set the status of multiple bugs to RELEASE_PENDING:
+  #  RubyBugzilla.modify([948970, 948971], :status => "RELEASE_PENDING")
+  #
+  #  Add a comment
+  #  RubyBugzilla.modify("948972", :comment => "whatevs")
+  #
+  #  Set the status to POST and add a comment
+  #  RubyBugzilla.modify(948970, :status => "POST", :comment => "Fixed in shabla")
+  #
+  def self.modify(bugids_arg, options)
+
+    raise "Please install python-bugzilla" unless File.exists?(File.expand_path(CMD))
+
+    bugids = Array(bugids_arg)
+    if bugids.empty? || options.empty? || bugids_arg.to_s.empty?
+      raise ArgumentError, "bugids and options must be specified"
+    end
+
+    uri_opt, debug_opt = self.options
+    params = {}
+
+    params["--bugzilla="]     = "#{uri_opt}/xmlrpc.cgi" unless uri_opt.nil?
+    params["modify"]          = nil
+
+    self.set_params_bugids(params, bugids)
+    self.set_params_options(params, options)
+
+    begin 
+      modify_cmd_result = LinuxAdmin.run!(CMD, :params => params)
+    rescue => error
+      raise "#{self.string_command(CMD, params)} Failed.\n#{error}"
+    end
+
+    self.string_command(CMD, params)
+  end
+
+  private
+  def self.set_params_options(params, options)
+    options.each do |key,value|
+      params["--#{key}="] = value
+    end
+  end
+
+  private
+  def self.set_params_bugids(params, bugids)
+    bugids.each do |bugid|
+      params[bugid] = nil
+    end
+  end
+
   private
   def self.string_command(cmd, params = {}, password=nil)
     scrubbed_str = str = ""
@@ -134,7 +193,11 @@ class RubyBugzilla
       if value.kind_of?(Array)
         str << " #{param} \"#{value.join(" ")}\" "
       else
-        str << " #{param}\"#{value}\" "
+        if value.to_s.length == 0
+          str << " #{param} "
+        else
+          str << " #{param}\"#{value}\" "
+        end
       end
     end
     scrubbed_str = str.sub(password, "********") unless password.nil?
