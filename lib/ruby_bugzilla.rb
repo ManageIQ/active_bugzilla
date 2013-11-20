@@ -3,9 +3,9 @@ require 'linux_admin'
 
 class RubyBugzilla
 
-  CMD = '/usr/bin/bugzilla'
-  COOKIES_FILE = File.expand_path('~') + '/.bugzillacookies'
-  CREDS_FILE = File.expand_path('~') + '/.bugzilla_credentials.yaml'
+  CMD = `which bugzilla`.chomp
+  COOKIES_FILE = File.expand_path('~/.bugzillacookies')
+  CREDS_FILE = File.expand_path('~/.bugzilla_credentials.yaml')
 
   def self.username=(un)
     @username = un
