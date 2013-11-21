@@ -16,7 +16,7 @@ class RubyBugzilla
     File.delete(COOKIES_FILE) if File.exists?(COOKIES_FILE)
   end
 
-  attr_accessor :username, :password, :bugzilla_uri, :debug_login, :last_command
+  attr_accessor :username, :password, :bugzilla_uri, :last_command
 
   def initialize(username, password, options = {})
     raise "python-bugzilla not installed" unless self.class.installed?
@@ -25,7 +25,6 @@ class RubyBugzilla
     self.username     = username
     self.password     = password
     self.bugzilla_uri = options[:bugzilla_uri] || "https://bugzilla.redhat.com"
-    self.debug_login  = options[:debug_login]
   end
 
   def inspect
@@ -39,7 +38,7 @@ class RubyBugzilla
     end
 
     params = {}
-    params["--debug"] = nil if debug_login
+    params["--debug"] = nil
     params["login"]   = [username, password]
 
     begin
