@@ -80,8 +80,7 @@ class RubyBugzilla
     end
 
     params = {}
-    params["modify"] = nil
-    set_params_bugids(params, bugids)
+    params["modify"] = bugids
     set_params_options(params, options)
 
     execute(params)
@@ -108,12 +107,6 @@ class RubyBugzilla
   def set_params_options(params, options)
     options.each do |key,value|
       params["--#{key}="] = value
-    end
-  end
-
-  def set_params_bugids(params, bugids)
-    bugids.each do |bugid|
-      params[bugid] = nil
     end
   end
 
