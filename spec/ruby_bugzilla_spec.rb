@@ -13,87 +13,77 @@ describe RubyBugzilla do
     end
   end
 
-  # Run after each tests to reset any faked RubyBugzilla constants.
-  after :each do
+  let(:bz) { RubyBugzilla.new("calvin", "hobbes") }
+
+  before do
+    # Assume most tests have bugzilla installed and logged in by faking with
+    #   valid files
     ignore_warnings do
-      RubyBugzilla::CMD = saved_cmd
-      RubyBugzilla::COOKIES_FILE = saved_cookies_file
-      RubyBugzilla.username = nil
-      RubyBugzilla.password = nil
+      RubyBugzilla::CMD = "/bin/echo"
+      RubyBugzilla::COOKIES_FILE = "/bin/echo"
     end
   end
 
-  context "#logged_in?" do
+  after do
+    # Reset any faked RubyBugzilla constants.
+    ignore_warnings do
+      RubyBugzilla::CMD = saved_cmd
+      RubyBugzilla::COOKIES_FILE = saved_cookies_file
+    end
+  end
+
+  context ".logged_in?" do
     it "with an existing bugzilla cookie" do
-      Tempfile.open('ruby_bugzilla_spec') do |file|
-        ignore_warnings do
-          RubyBugzilla::COOKIES_FILE = file.path
-        end
-        RubyBugzilla.logged_in?.should be true
-      end
+      RubyBugzilla.logged_in?.should be_true
     end
 
     it "with no bugzilla cookie" do
       ignore_warnings do
         RubyBugzilla::COOKIES_FILE = '/This/file/does/not/exist'
       end
-      RubyBugzilla.logged_in?.should be false
+      RubyBugzilla.logged_in?.should be_false
     end
   end
 
-  context "#login!" do
+  context "#new" do
+    it 'normal case' do
+      expect { bz }.to_not raise_error
+    end
+
     it "when the bugzilla command is not found" do
       ignore_warnings do
         RubyBugzilla::CMD = '/This/cmd/does/not/exist'
       end
-      expect { RubyBugzilla.login! }.to raise_exception
+      expect { bz }.to raise_error
     end
 
-    it "when the bugzilla login command produces output" do
-      # Fake the command and cookies file.
-      ignore_warnings do
-        RubyBugzilla::CMD = '/bin/echo'
-        RubyBugzilla::COOKIES_FILE = '/This/file/does/not/exist'
-      end
-      cmd, output = RubyBugzilla.login!("My Username", "My Password")
-      output.should include("login My Username My Password")
+    it "when username and password are not set" do
+      expect { RubyBugzilla.new(nil, nil) }.to raise_error(ArgumentError)
+    end
+  end
+
+  context "#login" do
+    it "when already logged in" do
+      cmd, output = bz.login
+      cmd.should include("Already Logged In")
     end
 
-    it "when the bugzilla login command produces output with arguments" do
-      # Fake the command and cookies file.
+    it "when not already logged in" do
       ignore_warnings do
-        RubyBugzilla::CMD = '/bin/echo'
         RubyBugzilla::COOKIES_FILE = '/This/file/does/not/exist'
       end
-      cmd, output = RubyBugzilla.login!("calvin", "hobbes")
+      cmd, output = bz.login
       output.should include("login calvin hobbes")
     end
   end
 
   context "#query" do
-    it "when the bugzilla command is not found" do
-      ignore_warnings do
-        RubyBugzilla::CMD = '/This/cmd/does/not/exist'
-      end
-      expect { RubyBugzilla.query }.to raise_exception
-    end
-
     it "when no product is specified" do
-      ignore_warnings do
-        RubyBugzilla::CMD = '/bin/echo'
-      end
-      expect { RubyBugzilla.query }.to raise_error(ArgumentError)
+      expect { bz.query }.to raise_error(ArgumentError)
     end
 
     it "when the bugzilla query command produces output" do
-      # Fake the command and cookies file.
-      ignore_warnings do
-        RubyBugzilla::CMD = '/bin/echo'
-        RubyBugzilla::COOKIES_FILE = '/This/file/does/not/exist'
-      end
-
-      cmd, output = RubyBugzilla.login!("calvin", "hobbes")
-      cmd, output = RubyBugzilla.query('CloudForms Management Engine',
+      cmd, output = bz.query('CloudForms Management Engine',
         flag = '',
         bug_status = 'NEW, ASSIGNED, POST, MODIFIED, ON_DEV, ON_QA, VERIFIED, RELEASE_PENDING',
         output_format = 'BZ_ID: %{id} STATUS: %{bug_status} SUMMARY: %{summary}')
@@ -106,43 +96,20 @@ describe RubyBugzilla do
   end
 
   context "#modify" do
-    it "when the bugzilla command is not found" do
-      ignore_warnings do
-        RubyBugzilla::CMD = '/This/cmd/does/not/exist'
-      end
-      expect { RubyBugzilla.modify }.to raise_exception
-    end
-
     it "when no arguments are specified" do
-      ignore_warnings do
-        RubyBugzilla::CMD = '/bin/echo'
-      end
-      expect { RubyBugzilla.modify }.to raise_error(ArgumentError)
+      expect { bz.modify }.to raise_error(ArgumentError)
     end
 
     it "when no bugids are are specified" do
-      ignore_warnings do
-        RubyBugzilla::CMD = '/bin/echo'
-      end
-      expect { RubyBugzilla.modify("", :status => "POST") }.to raise_error(ArgumentError)
+      expect { bz.modify("", :status => "POST") }.to raise_error(ArgumentError)
     end
 
     it "when no options are specified" do
-      ignore_warnings do
-        RubyBugzilla::CMD = '/bin/echo'
-      end
-      expect { RubyBugzilla.modify(9, {}) }.to raise_error(ArgumentError)
+      expect { bz.modify(9, {}) }.to raise_error(ArgumentError)
     end
 
     it "when the bugzilla modify command succeeds for one option and multiple BZs" do
-      # Fake the command and cookies file.
-      ignore_warnings do
-        RubyBugzilla::CMD = '/bin/echo'
-        RubyBugzilla::COOKIES_FILE = '/This/file/does/not/exist'
-      end
-
-      cmd, output = RubyBugzilla.login!("calvin", "hobbes")
-      cmd = RubyBugzilla.modify(["948970", "948971", "948972", "948973"],
+      cmd = bz.modify(["948970", "948971", "948972", "948973"],
         :status => "RELEASE_PENDING")
 
       cmd.should include("modify")
@@ -154,15 +121,7 @@ describe RubyBugzilla do
     end
 
     it "when the bugzilla modify command succeeds for multiple options and a Array BZ" do
-      # Fake the command and cookies file.
-      ignore_warnings do
-        RubyBugzilla::CMD = '/bin/echo'
-        RubyBugzilla::COOKIES_FILE = '/This/file/does/not/exist'
-      end
-
-      cmd, output = RubyBugzilla.login!("calvin", "hobbes")
-      cmd = RubyBugzilla.modify(bugids = ["948972"],
-        options = { :status => "POST", :comment => "Fixed in shabla" } )
+      cmd = bz.modify(["948972"], :status => "POST", :comment => "Fixed in shabla")
 
       cmd.should include("modify")
       cmd.should include("--status=\"POST\"")
@@ -171,14 +130,7 @@ describe RubyBugzilla do
     end
 
     it "when the bugzilla modify command succeeds for a Fixnum BZ" do
-      # Fake the command and cookies file.
-      ignore_warnings do
-        RubyBugzilla::CMD = '/bin/echo'
-        RubyBugzilla::COOKIES_FILE = '/This/file/does/not/exist'
-      end
-
-      cmd, output = RubyBugzilla.login!("calvin", "hobbes")
-      cmd = RubyBugzilla.modify(948972, :status => "POST")
+      cmd = bz.modify(948972, :status => "POST")
 
       cmd.should include("modify")
       cmd.should include("--status=\"POST\"")
@@ -186,14 +138,7 @@ describe RubyBugzilla do
     end
 
     it "when the bugzilla modify command succeeds for a String BZ" do
-      # Fake the command and cookies file.
-      ignore_warnings do
-        RubyBugzilla::CMD = '/bin/echo'
-        RubyBugzilla::COOKIES_FILE = '/This/file/does/not/exist'
-      end
-
-      cmd, output = RubyBugzilla.login!("calvin", "hobbes")
-      cmd = RubyBugzilla.modify("948972", :status => "POST")
+      cmd = bz.modify("948972", :status => "POST")
 
       cmd.should include("modify")
       cmd.should include("--status=\"POST\"")

@@ -4,24 +4,10 @@ class RubyBugzilla
   CMD = `which bugzilla`.chomp
   COOKIES_FILE = File.expand_path('~/.bugzillacookies')
 
-  class << self
-    attr_accessor :username, :password, :bugzilla_uri, :debug_login
+  def self.installed?
+    File.exists?(CMD)
   end
 
-  def self.bugzilla_uri
-    @bugzilla_uri ||= "https://bugzilla.redhat.com"
-  end
-
-  def self.bugzilla_request_uri
-    URI.join(bugzilla_uri, "xmlrpc.cgi").to_s
-  end
-
-  def self.python_bugzilla_installed?
-    File.exists?(File.expand_path(CMD))
-  end
-
-  # Running "bugzilla login" generates the bugzilla cookies.
-  # If that cookie file exists assume the user already logged in.
   def self.logged_in?
     File.exists?(COOKIES_FILE)
   end
@@ -30,14 +16,20 @@ class RubyBugzilla
     File.delete(COOKIES_FILE) if File.exists?(COOKIES_FILE)
   end
 
-  def self.login!(username = nil, password = nil)
-    raise "Please install python-bugzilla" unless python_bugzilla_installed?
-    return "Already Logged In" if self.logged_in?
+  attr_accessor :username, :password, :bugzilla_uri, :debug_login
 
-    username ||= self.username
-    password ||= self.password
-    raise "username and password must be set" if username.nil? || password.nil?
+  def initialize(username, password, options = {})
+    raise "python-bugzilla not installed" unless self.class.installed?
+    raise ArgumentError, "username and password must be set" if username.nil? || password.nil?
 
+    self.username     = username
+    self.password     = password
+    self.bugzilla_uri = options[:bugzilla_uri] || "https://bugzilla.redhat.com"
+    self.debug_login  = options[:debug_login]
+  end
+
+  def login
+    return "Already Logged In" if self.class.logged_in?
 
     params = {}
     params["--bugzilla="] = bugzilla_request_uri
@@ -52,11 +44,10 @@ class RubyBugzilla
       raise "#{self.string_command(CMD, params, password)} Failed.\n#{error}"
     end
 
-    return self.string_command(CMD, params, password), login_cmd_result.output
+    return string_command(CMD, params, password), login_cmd_result.output
   end
 
-  def self.query(product, flag=nil, bug_status=nil, output_format=nil)
-    raise "Please install python-bugzilla" unless python_bugzilla_installed?
+  def query(product, flag=nil, bug_status=nil, output_format=nil)
     raise ArgumentError, "product cannot be nil" if product.nil?
 
     params = {}
@@ -73,7 +64,7 @@ class RubyBugzilla
       raise "#{self.string_command(CMD, params)} Failed.\n#{error}"
     end
 
-    return self.string_command(CMD, params), query_cmd_result.output
+    return string_command(CMD, params), query_cmd_result.output
   end
 
   #
@@ -93,9 +84,7 @@ class RubyBugzilla
   #  Set the status to POST and add a comment
   #  RubyBugzilla.modify(948970, :status => "POST", :comment => "Fixed in shabla")
   #
-  def self.modify(bugids_arg, options)
-    raise "Please install python-bugzilla" unless python_bugzilla_installed?
-
+  def modify(bugids_arg, options)
     bugids = Array(bugids_arg)
     if bugids.empty? || options.empty? || bugids_arg.to_s.empty?
       raise ArgumentError, "bugids and options must be specified"
@@ -105,8 +94,8 @@ class RubyBugzilla
     params["--bugzilla="] = bugzilla_request_uri
     params["modify"]      = nil
 
-    self.set_params_bugids(params, bugids)
-    self.set_params_options(params, options)
+    set_params_bugids(params, bugids)
+    set_params_options(params, options)
 
     begin
       LinuxAdmin.run!(CMD, :params => params)
@@ -114,24 +103,28 @@ class RubyBugzilla
       raise "#{self.string_command(CMD, params)} Failed.\n#{error}"
     end
 
-    self.string_command(CMD, params)
+    string_command(CMD, params)
   end
 
   private
 
-  def self.set_params_options(params, options)
+  def bugzilla_request_uri
+    URI.join(bugzilla_uri, "xmlrpc.cgi").to_s
+  end
+
+  def set_params_options(params, options)
     options.each do |key,value|
       params["--#{key}="] = value
     end
   end
 
-  def self.set_params_bugids(params, bugids)
+  def set_params_bugids(params, bugids)
     bugids.each do |bugid|
       params[bugid] = nil
     end
   end
 
-  def self.string_command(cmd, params = {}, password=nil)
+  def string_command(cmd, params = {}, password=nil)
     scrubbed_str = str = ""
     str << cmd
     params.each do |param, value|
