@@ -1,35 +1,13 @@
 require 'spec_helper'
 
 describe RubyBugzilla do
-  saved_cmd = RubyBugzilla::CMD
-  saved_cookies_file = RubyBugzilla::COOKIES_FILE
-
-  def ignore_warnings(&block)
-    begin
-      v, $VERBOSE = $VERBOSE, nil
-      block.call if block
-    ensure
-      $VERBOSE = v
-    end
-  end
-
   let(:bz) { RubyBugzilla.new("calvin", "hobbes") }
 
   before do
     # Assume most tests have bugzilla installed and logged in by faking with
     #   valid files
-    ignore_warnings do
-      RubyBugzilla::CMD = "/bin/echo"
-      RubyBugzilla::COOKIES_FILE = "/bin/echo"
-    end
-  end
-
-  after do
-    # Reset any faked RubyBugzilla constants.
-    ignore_warnings do
-      RubyBugzilla::CMD = saved_cmd
-      RubyBugzilla::COOKIES_FILE = saved_cookies_file
-    end
+    stub_const("RubyBugzilla::CMD", "/bin/echo")
+    stub_const("RubyBugzilla::COOKIES_FILE", "/bin/echo")
   end
 
   context ".logged_in?" do
@@ -38,9 +16,7 @@ describe RubyBugzilla do
     end
 
     it "with no bugzilla cookie" do
-      ignore_warnings do
-        RubyBugzilla::COOKIES_FILE = '/This/file/does/not/exist'
-      end
+      stub_const("RubyBugzilla::COOKIES_FILE", "/This/file/does/not/exist")
       RubyBugzilla.logged_in?.should be_false
     end
   end
@@ -51,9 +27,7 @@ describe RubyBugzilla do
     end
 
     it "when the bugzilla command is not found" do
-      ignore_warnings do
-        RubyBugzilla::CMD = '/This/cmd/does/not/exist'
-      end
+      stub_const("RubyBugzilla::CMD", "/This/cmd/does/not/exist")
       expect { bz }.to raise_error
     end
 
@@ -71,9 +45,7 @@ describe RubyBugzilla do
     end
 
     it "when not already logged in" do
-      ignore_warnings do
-        RubyBugzilla::COOKIES_FILE = '/This/file/does/not/exist'
-      end
+      stub_const("RubyBugzilla::COOKIES_FILE", "/This/file/does/not/exist")
       bz.login
 
       bz.last_command.should include("login")
