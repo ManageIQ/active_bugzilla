@@ -64,16 +64,19 @@ describe RubyBugzilla do
 
   context "#login" do
     it "when already logged in" do
-      cmd, output = bz.login
-      cmd.should include("Already Logged In")
+      output = bz.login
+
+      bz.last_command.should be_nil
+      output.should include("Already Logged In")
     end
 
     it "when not already logged in" do
       ignore_warnings do
         RubyBugzilla::COOKIES_FILE = '/This/file/does/not/exist'
       end
-      cmd, output = bz.login
-      output.should include("login calvin hobbes")
+      bz.login
+
+      bz.last_command.should include("login")
     end
   end
 
@@ -83,12 +86,12 @@ describe RubyBugzilla do
     end
 
     it "when the bugzilla query command produces output" do
-      cmd, output = bz.query('CloudForms Management Engine',
-        flag = '',
-        bug_status = 'NEW, ASSIGNED, POST, MODIFIED, ON_DEV, ON_QA, VERIFIED, RELEASE_PENDING',
-        output_format = 'BZ_ID: %{id} STATUS: %{bug_status} SUMMARY: %{summary}')
+      output = bz.query('CloudForms Management Engine', nil,
+        'NEW, ASSIGNED, POST, MODIFIED, ON_DEV, ON_QA, VERIFIED, RELEASE_PENDING',
+        'BZ_ID: %{id} STATUS: %{bug_status} SUMMARY: %{summary}'
+      )
 
-      cmd.should include("query")
+      bz.last_command.should include("query")
       output.should include("BZ_ID:")
       output.should include("STATUS:")
       output.should include("SUMMARY:")
@@ -109,40 +112,39 @@ describe RubyBugzilla do
     end
 
     it "when the bugzilla modify command succeeds for one option and multiple BZs" do
-      cmd, output = bz.modify(["948970", "948971", "948972", "948973"],
-        :status => "RELEASE_PENDING")
+      bz.modify(["948970", "948971", "948972", "948973"], :status => "RELEASE_PENDING")
 
-      cmd.should include("modify")
-      cmd.should include("--status=\"RELEASE_PENDING\"")
-      cmd.should include("948970")
-      cmd.should include("948971")
-      cmd.should include("948972")
-      cmd.should include("948973")
+      bz.last_command.should include("modify")
+      bz.last_command.should include("--status=\"RELEASE_PENDING\"")
+      bz.last_command.should include("948970")
+      bz.last_command.should include("948971")
+      bz.last_command.should include("948972")
+      bz.last_command.should include("948973")
     end
 
     it "when the bugzilla modify command succeeds for multiple options and a Array BZ" do
-      cmd, output = bz.modify(["948972"], :status => "POST", :comment => "Fixed in shabla")
+      bz.modify(["948972"], :status => "POST", :comment => "Fixed in shabla")
 
-      cmd.should include("modify")
-      cmd.should include("--status=\"POST\"")
-      cmd.should include("948972")
-      cmd.should include("Fixed in shabla")
+      bz.last_command.should include("modify")
+      bz.last_command.should include("--status=\"POST\"")
+      bz.last_command.should include("948972")
+      bz.last_command.should include("Fixed in shabla")
     end
 
     it "when the bugzilla modify command succeeds for a Fixnum BZ" do
-      cmd, output = bz.modify(948972, :status => "POST")
+      bz.modify(948972, :status => "POST")
 
-      cmd.should include("modify")
-      cmd.should include("--status=\"POST\"")
-      cmd.should include("948972")
+      bz.last_command.should include("modify")
+      bz.last_command.should include("--status=\"POST\"")
+      bz.last_command.should include("948972")
     end
 
     it "when the bugzilla modify command succeeds for a String BZ" do
-      cmd, output = bz.modify("948972", :status => "POST")
+      bz.modify("948972", :status => "POST")
 
-      cmd.should include("modify")
-      cmd.should include("--status=\"POST\"")
-      cmd.should include("948972")
+      bz.last_command.should include("modify")
+      bz.last_command.should include("--status=\"POST\"")
+      bz.last_command.should include("948972")
     end
   end
 end

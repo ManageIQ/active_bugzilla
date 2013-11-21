@@ -16,7 +16,7 @@ class RubyBugzilla
     File.delete(COOKIES_FILE) if File.exists?(COOKIES_FILE)
   end
 
-  attr_accessor :username, :password, :bugzilla_uri, :debug_login
+  attr_accessor :username, :password, :bugzilla_uri, :debug_login, :last_command
 
   def initialize(username, password, options = {})
     raise "python-bugzilla not installed" unless self.class.installed?
@@ -29,7 +29,10 @@ class RubyBugzilla
   end
 
   def login
-    return "Already Logged In" if self.class.logged_in?
+    if self.class.logged_in?
+      self.last_command = nil
+      return "Already Logged In"
+    end
 
     params = {}
     params["--debug"] = nil if debug_login
@@ -95,13 +98,8 @@ class RubyBugzilla
   def execute(params)
     params = {"--bugzilla=" => bugzilla_request_uri}.merge(params)
 
-    begin
-      result = LinuxAdmin.run!(CMD, :params => params)
-    rescue => error
-      raise "#{self.string_command(CMD, params, password)} Failed.\n#{error}"
-    end
-
-    return string_command(CMD, params, password), result.output
+    self.last_command = string_command(CMD, params, password)
+    LinuxAdmin.run!(CMD, :params => params).output
   end
 
   def set_params_options(params, options)
