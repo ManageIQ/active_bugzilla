@@ -87,7 +87,7 @@ class RubyBugzilla
       params["--debug"]     = nil if debug_opt
       params["login"]       = [username, password]
 
-      begin 
+      begin
         login_cmd_result = LinuxAdmin.run!(CMD, :params => params)
       rescue => error
         # A failed login attempt could result in a corrupt COOKIES_FILE
@@ -117,7 +117,7 @@ class RubyBugzilla
     params["--bug_status="]   = bug_status unless bug_status.nil?
     params["--outputformat="] = output_format unless output_format.nil?
 
-    begin 
+    begin
       query_cmd_result = LinuxAdmin.run!(CMD, :params => params)
     rescue => error
       raise "#{self.string_command(CMD, params)} Failed.\n#{error}"
@@ -131,7 +131,7 @@ class RubyBugzilla
   # Example Usage:
   #
   #  bugids can be an Array of bug ids, a String or Fixnum
-  #  containing a single bug id 
+  #  containing a single bug id
   #
   #  options are a hash of options supported by python-bugzilla
   #
@@ -162,7 +162,7 @@ class RubyBugzilla
     self.set_params_bugids(params, bugids)
     self.set_params_options(params, options)
 
-    begin 
+    begin
       modify_cmd_result = LinuxAdmin.run!(CMD, :params => params)
     rescue => error
       raise "#{self.string_command(CMD, params)} Failed.\n#{error}"
@@ -203,5 +203,4 @@ class RubyBugzilla
     scrubbed_str = str.sub(password, "********") unless password.nil?
     scrubbed_str
   end
-
 end

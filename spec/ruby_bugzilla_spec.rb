@@ -14,7 +14,7 @@ class TempCredFile < Tempfile
     f.flush
   end
 end
-      
+
 describe RubyBugzilla do
   saved_cmd = RubyBugzilla::CMD
   saved_cookies_file = RubyBugzilla::COOKIES_FILE
@@ -85,7 +85,6 @@ describe RubyBugzilla do
       cmd, output = RubyBugzilla.login!("calvin", "hobbes")
       output.should include("login calvin hobbes")
     end
-
   end
 
   context "#query" do
@@ -105,21 +104,21 @@ describe RubyBugzilla do
 
     it "when the bugzilla query command produces output" do
       # Fake the command and cookies file.
-        ignore_warnings do
-          RubyBugzilla::CMD = '/bin/echo'
-          RubyBugzilla::COOKIES_FILE = '/This/file/does/not/exist'
-        end
+      ignore_warnings do
+        RubyBugzilla::CMD = '/bin/echo'
+        RubyBugzilla::COOKIES_FILE = '/This/file/does/not/exist'
+      end
 
-        cmd, output = RubyBugzilla.login!("calvin", "hobbes")
-        cmd, output = RubyBugzilla.query('CloudForms Management Engine',
-          flag = '',
-          bug_status = 'NEW, ASSIGNED, POST, MODIFIED, ON_DEV, ON_QA, VERIFIED, RELEASE_PENDING',
-          output_format = 'BZ_ID: %{id} STATUS: %{bug_status} SUMMARY: %{summary}')
+      cmd, output = RubyBugzilla.login!("calvin", "hobbes")
+      cmd, output = RubyBugzilla.query('CloudForms Management Engine',
+        flag = '',
+        bug_status = 'NEW, ASSIGNED, POST, MODIFIED, ON_DEV, ON_QA, VERIFIED, RELEASE_PENDING',
+        output_format = 'BZ_ID: %{id} STATUS: %{bug_status} SUMMARY: %{summary}')
 
-        cmd.should include("query")
-        output.should include("BZ_ID:")
-        output.should include("STATUS:")
-        output.should include("SUMMARY:")
+      cmd.should include("query")
+      output.should include("BZ_ID:")
+      output.should include("STATUS:")
+      output.should include("SUMMARY:")
     end
   end
 
@@ -308,7 +307,6 @@ describe RubyBugzilla do
         pw.should == "My Password"
       end
     end
-
   end
 
   context "#options" do
@@ -332,6 +330,4 @@ describe RubyBugzilla do
       debug.should == false
     end
   end
-
 end
-
