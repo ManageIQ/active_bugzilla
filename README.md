@@ -1,6 +1,5 @@
 # RubyBugzilla
 
-
 [![Gem Version](https://badge.fury.io/rb/ruby_bugzilla.png)](http://badge.fury.io/rb/ruby_bugzilla)
 [![Build Status](https://travis-ci.org/ManageIQ/ruby_bugzilla.png)](https://travis-ci.org/ManageIQ/ruby_bugzilla)
 [![Code Climate](https://codeclimate.com/github/ManageIQ/ruby_bugzilla.png)](https://codeclimate.com/github/ManageIQ/ruby_bugzilla)
@@ -8,6 +7,24 @@
 [![Dependency Status](https://gemnasium.com/ManageIQ/ruby_bugzilla.png)](https://gemnasium.com/ManageIQ/ruby_bugzilla)
 
 A Ruby wrapper around the python-bugzilla CLI for easy access to the Bugzilla API
+
+## Prerequisites
+
+python-bugzilla must be installed.
+
+* For Fedora/RHEL
+  * sudo yum install python-bugzilla
+* For Mac
+  * Download python-bugzilla from https://fedorahosted.org/python-bugzilla/
+  * Untar the file
+  * Run setup.py install
+
+python-bugzilla uses pycurl and expects it to be installed.
+
+* For Mac
+  * Download pycurl from http://pycurl.sourceforge.net/download/
+  * Untar the file
+  * Run setup.py install
 
 ## Installation
 
@@ -23,15 +40,14 @@ Or install it yourself as:
 
     $ gem install ruby_bugzilla
 
-## Usage
+## Example Usage
 
-  If not already logged in to bugzilla, RubyBugzilla can login using
-  the crendentials in bugzilla_credentials.yaml
-  Copy sample/bugzilla_credentials.yaml to $HOME and edit the file
-  to contain your bugzilla credentials.
-
-  TODO: Write more usage instructions here
-
+```ruby
+bz = RubyBugzilla.new("http://uri.to/bugzilla, "username", "password")
+bz.login
+output = bz.query(:bug_status => "NEW")
+bz.modify([928134, 932439], :status => "RELEASE_PENDING", :comment => "Looks good")
+```
 
 ## Contributing
 
