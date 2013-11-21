@@ -28,6 +28,10 @@ class RubyBugzilla
     self.debug_login  = options[:debug_login]
   end
 
+  def inspect
+    super.gsub(/@password=\".+?\", /, "")
+  end
+
   def login
     if self.class.logged_in?
       self.last_command = nil
