@@ -1,61 +1,19 @@
-require 'yaml'
 require 'linux_admin'
 
 class RubyBugzilla
-
   CMD = `which bugzilla`.chomp
   COOKIES_FILE = File.expand_path('~/.bugzillacookies')
-  CREDS_FILE = File.expand_path('~/.bugzilla_credentials.yaml')
 
-  def self.username=(un)
-    @username = un
+  class << self
+    attr_accessor :username, :password, :bugzilla_uri, :debug_login
   end
 
-  def self.username
-    @username
+  def self.bugzilla_uri
+    @bugzilla_uri ||= "https://bugzilla.redhat.com"
   end
 
-  def self.password=(pw)
-    @password = pw
-  end
-
-  def self.password
-    @password
-  end
-
-  def self.credentials(username = nil, password = nil)
-    self.username = username
-    self.password = password
-
-    if self.username.nil? || self.password.nil?
-      un_from_file, pw_from_file = self.credentials_from_file
-      self.username ||= un_from_file
-      self.password ||= pw_from_file
-    end
-
-    return self.username, self.password
-  end
-
-  # Ruby will catch and raise Erron::ENOENT: if there is no
-  # ~/.bugzilla_credentials.yaml file.
-  def self.credentials_from_file
-    begin
-      creds = YAML.load_file(CREDS_FILE)
-    rescue Errno::ENOENT
-      return nil, nil
-    end
-
-    return creds[:bugzilla_credentials][:username], creds[:bugzilla_credentials][:password]
-  end
-
-  def self.options
-    begin
-      options = YAML.load_file(CREDS_FILE)
-    rescue Errno::ENOENT
-      return "https://bugzilla.redhat.com/", false
-    end
-
-    return options[:bugzilla_options][:bugzilla_uri], options[:bugzilla_options][:debug]
+  def self.bugzilla_request_uri
+    URI.join(bugzilla_uri, "xmlrpc.cgi").to_s
   end
 
   def self.python_bugzilla_installed?
@@ -76,12 +34,14 @@ class RubyBugzilla
     raise "Please install python-bugzilla" unless python_bugzilla_installed?
     return "Already Logged In" if self.logged_in?
 
-    username, password = self.credentials(username, password)
-    uri_opt, debug_opt = self.options
+    username ||= self.username
+    password ||= self.password
+    raise "username and password must be set" if username.nil? || password.nil?
+
 
     params = {}
-    params["--bugzilla="] = "#{uri_opt}/xmlrpc.cgi" unless uri_opt.nil?
-    params["--debug"]     = nil if debug_opt
+    params["--bugzilla="] = bugzilla_request_uri
+    params["--debug"]     = nil if debug_login
     params["login"]       = [username, password]
 
     begin
@@ -99,10 +59,8 @@ class RubyBugzilla
     raise "Please install python-bugzilla" unless python_bugzilla_installed?
     raise ArgumentError, "product cannot be nil" if product.nil?
 
-    uri_opt, _ = self.options
-
     params = {}
-    params["--bugzilla="]     = "#{uri_opt}/xmlrpc.cgi" unless uri_opt.nil?
+    params["--bugzilla="]     = bugzilla_request_uri
     params["query"]           = nil
     params["--product="]      = product
     params["--flag="]         = flag unless flag.nil?
@@ -143,10 +101,8 @@ class RubyBugzilla
       raise ArgumentError, "bugids and options must be specified"
     end
 
-    uri_opt, _ = self.options
-
     params = {}
-    params["--bugzilla="] = "#{uri_opt}/xmlrpc.cgi" unless uri_opt.nil?
+    params["--bugzilla="] = bugzilla_request_uri
     params["modify"]      = nil
 
     self.set_params_bugids(params, bugids)
