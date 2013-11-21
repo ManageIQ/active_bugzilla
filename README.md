@@ -12,15 +12,19 @@ A Ruby wrapper around the python-bugzilla CLI for easy access to the Bugzilla AP
 
 python-bugzilla must be installed.
 
-* Download python-bugzilla from https://fedorahosted.org/python-bugzilla/
-* Untar the file
-* Run setup.py install
+* For Fedora/RHEL
+  * sudo yum install python-bugzilla
+* For Mac
+  * Download python-bugzilla from https://fedorahosted.org/python-bugzilla/
+  * Untar the file
+  * Run setup.py install
 
 python-bugzilla uses pycurl and expects it to be installed.
 
-* Download pycurl from http://pycurl.sourceforge.net/download/
-* Untar the file
-* Run setup.py install
+* For Mac
+  * Download pycurl from http://pycurl.sourceforge.net/download/
+  * Untar the file
+  * Run setup.py install
 
 ## Installation
 
