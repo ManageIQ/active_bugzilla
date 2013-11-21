@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe RubyBugzilla do
-  let(:bz) { RubyBugzilla.new("calvin", "hobbes") }
+  let(:bz) { RubyBugzilla.new("http://uri.to/bugzilla", "calvin", "hobbes") }
 
   before do
     # Assume most tests have bugzilla installed and logged in by faking with
@@ -31,8 +31,12 @@ describe RubyBugzilla do
       expect { bz }.to raise_error
     end
 
+    it "when bugzilla_uri is invalid" do
+      expect { RubyBugzilla.new("lalala", "", "") }.to raise_error(URI::BadURIError)
+    end
+
     it "when username and password are not set" do
-      expect { RubyBugzilla.new(nil, nil) }.to raise_error(ArgumentError)
+      expect { RubyBugzilla.new("http://uri.to/bugzilla", nil, nil) }.to raise_error(ArgumentError)
     end
   end
 

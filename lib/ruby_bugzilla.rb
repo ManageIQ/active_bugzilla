@@ -16,15 +16,21 @@ class RubyBugzilla
     File.delete(COOKIES_FILE) if File.exists?(COOKIES_FILE)
   end
 
-  attr_accessor :username, :password, :bugzilla_uri, :last_command
+  attr_accessor :bugzilla_uri, :username, :password, :last_command
+  attr_reader   :bugzilla_request_uri
 
-  def initialize(username, password, options = {})
+  def bugzilla_uri=(value)
+    @bugzilla_request_uri = URI.join(value, "xmlrpc.cgi").to_s
+    @bugzilla_uri = value
+  end
+
+  def initialize(bugzilla_uri, username, password)
     raise "python-bugzilla not installed" unless self.class.installed?
     raise ArgumentError, "username and password must be set" if username.nil? || password.nil?
 
+    self.bugzilla_uri = bugzilla_uri
     self.username     = username
     self.password     = password
-    self.bugzilla_uri = options[:bugzilla_uri] || "https://bugzilla.redhat.com"
   end
 
   def inspect
@@ -109,10 +115,6 @@ class RubyBugzilla
   end
 
   private
-
-  def bugzilla_request_uri
-    URI.join(bugzilla_uri, "xmlrpc.cgi").to_s
-  end
 
   def execute(params)
     params = {"--bugzilla=" => bugzilla_request_uri}.merge(params)

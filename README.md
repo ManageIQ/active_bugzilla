@@ -39,7 +39,7 @@ Or install it yourself as:
 ## Example Usage
 
 ```ruby
-bz = RubyBugzilla.new(username, password, bugzilla_uri)
+bz = RubyBugzilla.new("http://uri.to/bugzilla, "username", "password")
 bz.login
 output = bz.query(:bug_status => "NEW")
 bz.modify([928134, 932439], :status => "RELEASE_PENDING", :comment => "Looks good")
