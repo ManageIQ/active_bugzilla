@@ -59,6 +59,10 @@ class RubyBugzilla
       options[:bugzilla_options][:debug]]
   end
 
+  def self.python_bugzilla_installed?
+    File.exists?(File.expand_path(CMD))
+  end
+
   # Running "bugzilla login" generates the bugzilla cookies.
   # If that cookie file exists assume the user already logged in.
   def self.logged_in?
@@ -72,12 +76,11 @@ class RubyBugzilla
   end
 
   def self.login!(username = nil, password = nil)
-
     login_cmd = "#{CMD} "
     output = "Already Logged In"
     params = {}
 
-    raise "Please install python-bugzilla" unless File.exists?(File.expand_path(CMD))
+    raise "Please install python-bugzilla" unless python_bugzilla_installed?
 
     unless self.logged_in?
       username, password = self.credentials(username, password)
@@ -100,10 +103,7 @@ class RubyBugzilla
   end
 
   def self.query(product, flag=nil, bug_status=nil, output_format=nil)
-
-    raise "Please install python-bugzilla" unless
-      File.exists?(File.expand_path(CMD))
-
+    raise "Please install python-bugzilla" unless python_bugzilla_installed?
     raise ArgumentError, "product cannot be nil" if product.nil?
 
     uri_opt, debug_opt = self.options
@@ -145,8 +145,7 @@ class RubyBugzilla
   #  RubyBugzilla.modify(948970, :status => "POST", :comment => "Fixed in shabla")
   #
   def self.modify(bugids_arg, options)
-
-    raise "Please install python-bugzilla" unless File.exists?(File.expand_path(CMD))
+    raise "Please install python-bugzilla" unless python_bugzilla_installed?
 
     bugids = Array(bugids_arg)
     if bugids.empty? || options.empty? || bugids_arg.to_s.empty?
@@ -172,20 +171,19 @@ class RubyBugzilla
   end
 
   private
+
   def self.set_params_options(params, options)
     options.each do |key,value|
       params["--#{key}="] = value
     end
   end
 
-  private
   def self.set_params_bugids(params, bugids)
     bugids.each do |bugid|
       params[bugid] = nil
     end
   end
 
-  private
   def self.string_command(cmd, params = {}, password=nil)
     scrubbed_str = str = ""
     str << cmd
