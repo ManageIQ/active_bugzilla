@@ -32,39 +32,28 @@ class RubyBugzilla
     return "Already Logged In" if self.class.logged_in?
 
     params = {}
-    params["--bugzilla="] = bugzilla_request_uri
-    params["--debug"]     = nil if debug_login
-    params["login"]       = [username, password]
+    params["--debug"] = nil if debug_login
+    params["login"]   = [username, password]
 
     begin
-      login_cmd_result = LinuxAdmin.run!(CMD, :params => params)
-    rescue => error
-      # A failed login attempt could result in a corrupt COOKIES_FILE
-      clear_login!
-      raise "#{self.string_command(CMD, params, password)} Failed.\n#{error}"
+      execute(params)
+    rescue
+      self.class.clear_login! # A failed login attempt could result in a corrupt COOKIES_FILE
+      raise
     end
-
-    return string_command(CMD, params, password), login_cmd_result.output
   end
 
   def query(product, flag=nil, bug_status=nil, output_format=nil)
     raise ArgumentError, "product cannot be nil" if product.nil?
 
     params = {}
-    params["--bugzilla="]     = bugzilla_request_uri
     params["query"]           = nil
     params["--product="]      = product
     params["--flag="]         = flag unless flag.nil?
     params["--bug_status="]   = bug_status unless bug_status.nil?
     params["--outputformat="] = output_format unless output_format.nil?
 
-    begin
-      query_cmd_result = LinuxAdmin.run!(CMD, :params => params)
-    rescue => error
-      raise "#{self.string_command(CMD, params)} Failed.\n#{error}"
-    end
-
-    return string_command(CMD, params), query_cmd_result.output
+    execute(params)
   end
 
   #
@@ -91,25 +80,29 @@ class RubyBugzilla
     end
 
     params = {}
-    params["--bugzilla="] = bugzilla_request_uri
-    params["modify"]      = nil
-
+    params["modify"] = nil
     set_params_bugids(params, bugids)
     set_params_options(params, options)
 
-    begin
-      LinuxAdmin.run!(CMD, :params => params)
-    rescue => error
-      raise "#{self.string_command(CMD, params)} Failed.\n#{error}"
-    end
-
-    string_command(CMD, params)
+    execute(params)
   end
 
   private
 
   def bugzilla_request_uri
     URI.join(bugzilla_uri, "xmlrpc.cgi").to_s
+  end
+
+  def execute(params)
+    params = {"--bugzilla=" => bugzilla_request_uri}.merge(params)
+
+    begin
+      result = LinuxAdmin.run!(CMD, :params => params)
+    rescue => error
+      raise "#{self.string_command(CMD, params, password)} Failed.\n#{error}"
+    end
+
+    return string_command(CMD, params, password), result.output
   end
 
   def set_params_options(params, options)

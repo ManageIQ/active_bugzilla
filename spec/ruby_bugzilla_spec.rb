@@ -109,7 +109,7 @@ describe RubyBugzilla do
     end
 
     it "when the bugzilla modify command succeeds for one option and multiple BZs" do
-      cmd = bz.modify(["948970", "948971", "948972", "948973"],
+      cmd, output = bz.modify(["948970", "948971", "948972", "948973"],
         :status => "RELEASE_PENDING")
 
       cmd.should include("modify")
@@ -121,7 +121,7 @@ describe RubyBugzilla do
     end
 
     it "when the bugzilla modify command succeeds for multiple options and a Array BZ" do
-      cmd = bz.modify(["948972"], :status => "POST", :comment => "Fixed in shabla")
+      cmd, output = bz.modify(["948972"], :status => "POST", :comment => "Fixed in shabla")
 
       cmd.should include("modify")
       cmd.should include("--status=\"POST\"")
@@ -130,7 +130,7 @@ describe RubyBugzilla do
     end
 
     it "when the bugzilla modify command succeeds for a Fixnum BZ" do
-      cmd = bz.modify(948972, :status => "POST")
+      cmd, output = bz.modify(948972, :status => "POST")
 
       cmd.should include("modify")
       cmd.should include("--status=\"POST\"")
@@ -138,7 +138,7 @@ describe RubyBugzilla do
     end
 
     it "when the bugzilla modify command succeeds for a String BZ" do
-      cmd = bz.modify("948972", :status => "POST")
+      cmd, output = bz.modify("948972", :status => "POST")
 
       cmd.should include("modify")
       cmd.should include("--status=\"POST\"")
