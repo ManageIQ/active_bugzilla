@@ -25,7 +25,7 @@ class RubyBugzilla
   end
 
   def initialize(bugzilla_uri, username, password)
-    raise "python-bugzilla not installed" unless self.class.installed?
+    raise "python-bugzilla not installed" unless installed?
     raise ArgumentError, "username and password must be set" if username.nil? || password.nil?
 
     self.bugzilla_uri = bugzilla_uri
@@ -37,8 +37,20 @@ class RubyBugzilla
     super.gsub(/@password=\".+?\", /, "")
   end
 
+  def installed?
+    self.class.installed?
+  end
+
+  def logged_in?
+    self.class.logged_in?
+  end
+
+  def clear_login!
+    self.class.clear_login!
+  end
+
   def login
-    if self.class.logged_in?
+    if logged_in?
       self.last_command = nil
       return "Already Logged In"
     end
@@ -50,7 +62,7 @@ class RubyBugzilla
     begin
       execute(params)
     rescue
-      self.class.clear_login! # A failed login attempt could result in a corrupt COOKIES_FILE
+      clear_login! # A failed login attempt could result in a corrupt COOKIES_FILE
       raise
     end
   end
