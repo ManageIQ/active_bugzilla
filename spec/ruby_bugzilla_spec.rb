@@ -81,14 +81,15 @@ describe RubyBugzilla do
   end
 
   context "#query" do
-    it "when no product is specified" do
+    it "when no arguments are specified" do
       expect { bz.query }.to raise_error(ArgumentError)
     end
 
     it "when the bugzilla query command produces output" do
-      output = bz.query('CloudForms Management Engine', nil,
-        'NEW, ASSIGNED, POST, MODIFIED, ON_DEV, ON_QA, VERIFIED, RELEASE_PENDING',
-        'BZ_ID: %{id} STATUS: %{bug_status} SUMMARY: %{summary}'
+      output = bz.query(
+        :product      => 'CloudForms Management Engine',
+        :bug_status   => 'NEW, ASSIGNED, POST, MODIFIED, ON_DEV, ON_QA, VERIFIED, RELEASE_PENDING',
+        :outputformat => 'BZ_ID: %{id} STATUS: %{bug_status} SUMMARY: %{summary}'
       )
 
       bz.last_command.should include("query")
@@ -103,7 +104,7 @@ describe RubyBugzilla do
       expect { bz.modify }.to raise_error(ArgumentError)
     end
 
-    it "when no bugids are are specified" do
+    it "when invalid bugids are are specified" do
       expect { bz.modify("", :status => "POST") }.to raise_error(ArgumentError)
     end
 

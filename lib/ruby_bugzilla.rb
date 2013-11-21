@@ -50,44 +50,60 @@ class RubyBugzilla
     end
   end
 
-  def query(product, flag=nil, bug_status=nil, output_format=nil)
-    raise ArgumentError, "product cannot be nil" if product.nil?
+  # Query for existing bugs
+  #
+  # Example:
+  #   # Query for all NEW bugs, and return the output in a specific format.
+  #   puts bz.query(
+  #     :bug_status   => "NEW",
+  #     :outputformat => "BZ_ID: %{id} STATUS: %{bug_status} SUMMARY: %{summary}"
+  #   )
+  #   # BZ_ID: 1234 STATUS: NEW SUMMARY: Something went wrong.
+  #   # BZ_ID: 1235 STATUS: NEW SUMMARY: Another thing went wrong.
+  #
+  # @param options [Hash] Query options. Some possible values are:
+  #   * <tt>:product</tt> - A specific product to limit the query against
+  #   * <tt>:flag</tt> - Comma separated list of flags
+  #   * <tt>:bug_status</tt> - Comma separated list of bug statuses, such as NEW,
+  #     ASSIGNED, etc.
+  #   * <tt>:outputformat</tt> - A string that will be used to format each line
+  #     of output, with <tt>%{}</tt> as the interpolater.
+  # @return [String] The command output
+  def query(options)
+    raise ArgumentError, "options must be specified" if options.empty?
 
     params = {}
-    params["query"]           = nil
-    params["--product="]      = product
-    params["--flag="]         = flag unless flag.nil?
-    params["--bug_status="]   = bug_status unless bug_status.nil?
-    params["--outputformat="] = output_format unless output_format.nil?
+    params["query"] = nil
+    set_params_options(params, options)
 
     execute(params)
   end
 
+  # Modify an existing bug or set of bugs
   #
-  # Example Usage:
+  # Examples:
+  #   # Set the status of multiple bugs to RELEASE_PENDING
+  #   bz.modify([948970, 948971], :status => "RELEASE_PENDING")
   #
-  #  bugids can be an Array of bug ids, a String or Fixnum
-  #  containing a single bug id
+  #   # Add a comment
+  #   bz.modify("948972", :comment => "whatevs")
   #
-  #  options are a hash of options supported by python-bugzilla
+  #   # Set the status to POST and add a comment
+  #   bz.modify(948970, :status => "POST", :comment => "Fixed in shabla")
   #
-  #  Set the status of multiple bugs to RELEASE_PENDING:
-  #  RubyBugzilla.modify([948970, 948971], :status => "RELEASE_PENDING")
-  #
-  #  Add a comment
-  #  RubyBugzilla.modify("948972", :comment => "whatevs")
-  #
-  #  Set the status to POST and add a comment
-  #  RubyBugzilla.modify(948970, :status => "POST", :comment => "Fixed in shabla")
-  #
-  def modify(bugids_arg, options)
-    bugids = Array(bugids_arg)
-    if bugids.empty? || options.empty? || bugids_arg.to_s.empty?
-      raise ArgumentError, "bugids and options must be specified"
-    end
+  # @param bug_ids [String, Integer, Array<String>, Array<Integer>] The bug id
+  #   or ids to process.
+  # @param options [Hash] The properties to change.  Some properties include
+  #   * <tt>:status</tt> - The bug status, such as NEW, ASSIGNED, etc.
+  #   * <tt>:comment</tt> - Add a comment
+  # @return [String] The command output
+  def modify(bug_ids, options)
+    bug_ids = Array(bug_ids)
+    raise ArgumentError, "bug_ids and options must be specified" if bug_ids.empty? || options.empty?
+    raise ArgumentError, "bug_ids must be numeric" unless bug_ids.all? {|id| id.to_s =~ /^\d+$/ }
 
     params = {}
-    params["modify"] = bugids
+    params["modify"] = bug_ids
     set_params_options(params, options)
 
     execute(params)
