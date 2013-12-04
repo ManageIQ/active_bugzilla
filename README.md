@@ -17,14 +17,14 @@ python-bugzilla must be installed.
 * For Mac
   * Download python-bugzilla from https://fedorahosted.org/python-bugzilla/
   * Untar the file
-  * Run setup.py install
+  * Run sudo setup.py install
 
 python-bugzilla uses pycurl and expects it to be installed.
 
 * For Mac
   * Download pycurl from http://pycurl.sourceforge.net/download/
   * Untar the file
-  * Run setup.py install
+  * Run sudo setup.py install
 
 ## Installation
 
