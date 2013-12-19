@@ -124,4 +124,147 @@ describe RubyBugzilla do
       bz.last_command.should include("948972")
     end
   end
+
+  context "#xmlrpc_bug_query" do
+    it "when no argument is specified" do
+      expect { bz.xmlrpc_bug_query }.to raise_error(ArgumentError)
+    end
+
+    it "when an invalid argument is specified" do
+      expect { bz.xmlrpc_bug_query("not a Fixnum") }.to raise_error(ArgumentError)
+    end
+
+    it "when the specified bug does not exist" do
+      output = {}
+
+      allow(::XMLRPC::Client).to receive(:new).and_return(double('xmlrpc_client', :call => output))
+      expect { bz.xmlrpc_bug_query(94897099) }.to raise_error
+    end
+
+    it "when producing valid output" do
+      output = {
+        'bugs' => [
+          {
+            "priority" => "unspecified", 
+            "keywords" => ["ZStream"],
+            "cc"       => ["calvin@redhat.com", "hobbes@RedHat.com"],
+          },
+        ]
+      }
+
+      allow(::XMLRPC::Client).to receive(:new).and_return(double('xmlrpc_client', :call => output))
+      existing_bz = bz.xmlrpc_bug_query("948972")
+
+
+      bz.last_command.should include("Bug.get")
+
+      existing_bz["priority"].should == "unspecified"
+      existing_bz["keywords"].should == ["ZStream"]
+      existing_bz["cc"].should       == ["calvin@redhat.com", "hobbes@RedHat.com"]
+
+    end
+  end
+
+  context "#clone" do
+    it "when no argument is specified" do
+      expect { bz.clone }.to raise_error(ArgumentError)
+    end
+
+    it "when an invalid argument is specified" do
+      expect { bz.clone("not a Fixnum") }.to raise_error(ArgumentError)
+    end
+
+    it "when the specified bug to clone does not exist" do
+      output = {}
+
+      allow(::XMLRPC::Client).to receive(:new).and_return(double('xmlrpc_client', :call => output))
+      expect { bz.clone(94897099) }.to raise_error
+    end
+
+    it "when producing valid output" do
+      output = {"id" => 948992}
+      existing_bz = {
+        "description"    => "Description of problem:\n\nIt's Broken",
+        "priority"       => "unspecified", 
+        "assigned_to"    => "calvin@redhat.com",
+        "target_release" => ["---"], 
+        "keywords"       => ["ZStream"],
+        "cc"             => ["calvin@redhat.com", "hobbes@RedHat.com"],
+        "comments"       => [
+          {
+            "is_private"    => false,
+            "count"         => 0,
+            "time"          => XMLRPC::DateTime.new(1969, 7, 20, 16, 18, 30),
+            "bug_id"        => 948970,
+            "author"        => "cfme-bot@redhat.com",
+            "text"          => "It's Broken and impossible to reproduce",
+            "creation_time" => XMLRPC::DateTime.new(1969, 7, 20, 16, 18, 30),
+            "id"            => 5777871,
+            "creator_id"    => 349490
+          },
+          {
+            "is_private"    => false,
+            "count"         => 1,
+            "time"          => XMLRPC::DateTime.new(1970, 11, 10, 16, 18, 30),
+            "bug_id"        => 948970,
+            "author"        => "cfme-bot@redhat.com",
+            "text"          => "Fix Me Now!",
+            "creation_time" => XMLRPC::DateTime.new(1972, 2, 14, 0, 0, 0),
+            "id"            => 5782170,
+            "creator_id"    => 349490
+          },]
+      }
+
+      RubyBugzilla.any_instance.stub(:xmlrpc_bug_query).and_return(existing_bz)
+      allow(::XMLRPC::Client).to receive(:new).and_return(double('xmlrpc_create', :call => output))
+      new_bz_id = bz.clone("948972")
+
+      bz.last_command.should include("Bug.create")
+
+      new_bz_id.should == output["id"]
+    end
+
+    it "when providing override values" do
+      output = {"id" => 948992}
+      existing_bz = {
+        "description"    => "Description of problem:\n\nIt's Broken",
+        "priority"       => "unspecified", 
+        "assigned_to"    => "calvin@redhat.com",
+        "target_release" => ["---"], 
+        "keywords"       => ["ZStream"],
+        "cc"             => ["calvin@redhat.com", "hobbes@RedHat.com"],
+        "comments"       => [
+          {
+            "is_private"    => false,
+            "count"         => 0,
+            "time"          => XMLRPC::DateTime.new(1969, 7, 20, 16, 18, 30),
+            "bug_id"        => 948970,
+            "author"        => "cfme-bot@redhat.com",
+            "text"          => "It's Broken and impossible to reproduce",
+            "creation_time" => XMLRPC::DateTime.new(1969, 7, 20, 16, 18, 30),
+            "id"            => 5777871,
+            "creator_id"    => 349490
+          },
+          {
+            "is_private"    => false,
+            "count"         => 1,
+            "time"          => XMLRPC::DateTime.new(1970, 11, 10, 16, 18, 30),
+            "bug_id"        => 948970,
+            "author"        => "cfme-bot@redhat.com",
+            "text"          => "Fix Me Now!",
+            "creation_time" => XMLRPC::DateTime.new(1972, 2, 14, 0, 0, 0),
+            "id"            => 5782170,
+            "creator_id"    => 349490
+          },]
+      }
+
+      RubyBugzilla.any_instance.stub(:xmlrpc_bug_query).and_return(existing_bz)
+      allow(::XMLRPC::Client).to receive(:new).and_return(double('xmlrpc_create', :call => output))
+      new_bz_id = bz.clone("948972", {"assigned_to" => "Ham@NASA.gov", "target_release" => ["2.2.0"],} )
+
+      bz.last_command.should include("Bug.create")
+
+      new_bz_id.should == output["id"]
+    end
+  end
 end
