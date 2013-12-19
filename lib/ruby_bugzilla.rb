@@ -194,10 +194,12 @@ class RubyBugzilla
 
     clone_comment_is_private = false
     existing_bz[:comments.to_s].each do |comment|
-      clone_description << "\n\n" + "*" * 70
+      clone_description << "\n\n"
+      clone_description << "*" * 70
       clone_description << "\nFollowing comment by %s on %s\n\n" %
         [comment['author'], comment['creation_time'].to_time]
-      clone_description << "\n\n" + comment['text']
+      clone_description << "\n\n"
+      clone_description << comment['text']
       clone_comment_is_private = true if comment['is_private']
     end
 
