@@ -140,6 +140,9 @@ class RubyBugzilla
   #   bz.clone(948970)
   #
   # @param bug_id [String, Fixnum] A single bug id to process.
+  # @param overrides [Hash] The properties to change from the source bug. Some properties include
+  #   * <tt>:target_release</tt> - The target release for the new cloned bug.
+  #   * <tt>:assigned_to</tt> - The person to assign the new cloned bug to.
   # @return [Fixnum] The bug id to the new, cloned, bug.
   def clone(bug_id, overrides={})
     raise ArgumentError, "bug_id must be numeric" unless bug_id.to_s =~ /^\d+$/ 
@@ -251,7 +254,7 @@ class RubyBugzilla
   def xmlrpc_command_string(cmd, params = {})
     clean_params = Hash[params]
     clean_params[:Bugzilla_password] = "********"
-    "xmlrpc.call(#{cmd}, #{clean_params}"
+    "xmlrpc.call(#{cmd}, #{clean_params})"
   end
 
 end
