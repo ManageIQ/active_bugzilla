@@ -1,5 +1,8 @@
+require 'fileutils'
 require 'linux_admin'
+require 'tempfile'
 require "xmlrpc/client"
+
 
 class RubyBugzilla
   CLONE_FIELDS = [:assigned_to, :cc, :cf_devel_whiteboard, :cf_internal_whiteboard, :component,
@@ -10,14 +13,6 @@ class RubyBugzilla
 
   def self.installed?
     File.exists?(CMD)
-  end
-
-  def self.logged_in?
-    File.exists?(COOKIES_FILE)
-  end
-
-  def self.clear_login!
-    File.delete(COOKIES_FILE) if File.exists?(COOKIES_FILE)
   end
 
   attr_accessor :bugzilla_uri, :username, :password, :last_command, :xmlrpc
@@ -38,6 +33,8 @@ class RubyBugzilla
     self.password     = password
     self.xmlrpc       = ::XMLRPC::Client.new(bugzilla_request_hostname, '/xmlrpc.cgi', 443, nil,
       nil, username, password, true, 60)
+
+    login
   end
 
   def inspect
@@ -48,20 +45,21 @@ class RubyBugzilla
     self.class.installed?
   end
 
-  def logged_in?
-    self.class.logged_in?
-  end
-
   def clear_login!
-    self.class.clear_login!
+    cookies_file_entry = '.' + bugzilla_request_hostname
+
+    if File.exists?(COOKIES_FILE)
+      Tempfile.open('ruby_bugzilla') do |out_file|
+        File.open(COOKIES_FILE, 'r').each do |line|
+          out_file.print line unless line.include? cookies_file_entry
+        end
+        out_file.close(unlink_now=false)
+        FileUtils.mv(out_file.path, COOKIES_FILE)
+      end
+    end
   end
 
   def login
-    if logged_in?
-      self.last_command = nil
-      return "Already Logged In"
-    end
-
     params = {}
     params["--debug"] = nil
     params["login"]   = [username, password]
