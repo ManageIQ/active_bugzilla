@@ -10,17 +10,6 @@ describe RubyBugzilla do
     stub_const("RubyBugzilla::COOKIES_FILE", "/bin/echo")
   end
 
-  context ".logged_in?" do
-    it "with an existing bugzilla cookie" do
-      RubyBugzilla.logged_in?.should be_true
-    end
-
-    it "with no bugzilla cookie" do
-      stub_const("RubyBugzilla::COOKIES_FILE", "/This/file/does/not/exist")
-      RubyBugzilla.logged_in?.should be_false
-    end
-  end
-
   context "#new" do
     it 'normal case' do
       expect { bz }.to_not raise_error
@@ -42,16 +31,13 @@ describe RubyBugzilla do
 
   context "#login" do
     it "when already logged in" do
-      output = bz.login
-
-      bz.last_command.should be_nil
-      output.should include("Already Logged In")
+      bz.login
+      bz.last_command.should include("login")
     end
 
     it "when not already logged in" do
       stub_const("RubyBugzilla::COOKIES_FILE", "/This/file/does/not/exist")
       bz.login
-
       bz.last_command.should include("login")
     end
   end
