@@ -7,7 +7,8 @@ describe RubyBugzilla do
     # Assume most tests have bugzilla installed and logged in by faking with
     #   valid files
     stub_const("RubyBugzilla::CMD", "/bin/echo")
-    stub_const("RubyBugzilla::COOKIES_FILE", "/bin/echo")
+    stub_const("RubyBugzilla::COOKIES_FILE", File.expand_path("data/cookies_file", File.dirname(__FILE__)))
+
   end
 
   context "#new" do
