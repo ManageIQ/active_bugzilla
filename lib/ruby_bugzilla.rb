@@ -51,7 +51,7 @@ class RubyBugzilla
     if File.exists?(COOKIES_FILE)
       Tempfile.open('ruby_bugzilla') do |out_file|
         File.read(COOKIES_FILE).each_line do |line|
-          out_file.puts(line) unless line.include? cookies_file_entry
+          out_file.puts(line) unless line.include?(cookies_file_entry)
         end
         out_file.close()
         FileUtils.mv(out_file.path, COOKIES_FILE)
