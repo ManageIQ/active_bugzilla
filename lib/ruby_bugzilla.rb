@@ -46,15 +46,14 @@ class RubyBugzilla
   end
 
   def clear_login!
-    cookies_file_entry = 'HttpOnly_.' + bugzilla_request_hostname
-    cookies_file_entry << bugzilla_request_hostname
+    cookies_file_entry = "HttpOnly_.#{bugzilla_request_hostname}"
 
     if File.exists?(COOKIES_FILE)
       Tempfile.open('ruby_bugzilla') do |out_file|
         File.open(COOKIES_FILE, 'r').each do |line|
-          out_file.print line unless line.include? cookies_file_entry
+          out_file.puts(line) unless line.include? cookies_file_entry
         end
-        out_file.close(unlink_now=false)
+        out_file.close()
         FileUtils.mv(out_file.path, COOKIES_FILE)
       end
     end
