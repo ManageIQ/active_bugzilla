@@ -1,8 +1,7 @@
+require 'awesome_spawn'
 require 'fileutils'
-require 'linux_admin'
 require 'tempfile'
 require "xmlrpc/client"
-
 
 class RubyBugzilla
   CLONE_FIELDS = [:assigned_to, :cc, :cf_devel_whiteboard, :cf_internal_whiteboard, :component,
@@ -218,7 +217,7 @@ class RubyBugzilla
     params = {"--bugzilla=" => bugzilla_request_uri}.merge(params)
 
     self.last_command = shell_command_string(CMD, params, password)
-    LinuxAdmin.run!(CMD, :params => params).output
+    AwesomeSpawn.run!(CMD, :params => params).output
   end
 
   # Bypass python-bugzilla and use the xmlrpc API directly.
