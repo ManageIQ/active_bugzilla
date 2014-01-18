@@ -216,7 +216,7 @@ class RubyBugzilla
   def execute_shell(params)
     params = {"--bugzilla=" => bugzilla_request_uri}.merge(params)
 
-    self.last_command = shell_command_string(CMD, params, password)
+    self.last_command = shell_command_string(CMD, params)
     AwesomeSpawn.run!(CMD, :params => params).output
   end
 
@@ -229,26 +229,13 @@ class RubyBugzilla
   end
 
   # Build a printable representation of the python-bugzilla command executed.
-  def shell_command_string(cmd, params = {}, password=nil)
-    scrubbed_str = str = ""
-    str << cmd
-    params.each do |param, value|
-      if value.kind_of?(Array)
-        str << " #{param} \"#{value.join(" ")}\" "
-      else
-        if value.to_s.length == 0
-          str << " #{param} "
-        else
-          str << " #{param}\"#{value}\" "
-        end
-      end
-    end
-    scrubbed_str = str.sub(password, "********") unless password.nil?
-    scrubbed_str
+  def shell_command_string(cmd, params)
+    str = AwesomeSpawn.build_command_line(cmd, params)
+    str.gsub(password.shellescape, "********")
   end
 
   # Build a printable representation of the xmlrcp command executed.
-  def xmlrpc_command_string(cmd, params = {})
+  def xmlrpc_command_string(cmd, params)
     clean_params = Hash[params]
     clean_params[:Bugzilla_password] = "********"
     "xmlrpc.call(#{cmd}, #{clean_params})"

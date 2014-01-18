@@ -8,7 +8,6 @@ describe RubyBugzilla do
     #   valid files
     stub_const("RubyBugzilla::CMD", "/bin/echo")
     stub_const("RubyBugzilla::COOKIES_FILE", File.expand_path("data/cookies_file", File.dirname(__FILE__)))
-
   end
 
   context "#new" do
@@ -79,7 +78,7 @@ describe RubyBugzilla do
       bz.modify(["948970", "948971", "948972", "948973"], :status => "RELEASE_PENDING")
 
       bz.last_command.should include("modify")
-      bz.last_command.should include("--status=\"RELEASE_PENDING\"")
+      bz.last_command.should include("--status=RELEASE_PENDING")
       bz.last_command.should include("948970")
       bz.last_command.should include("948971")
       bz.last_command.should include("948972")
@@ -90,16 +89,16 @@ describe RubyBugzilla do
       bz.modify(["948972"], :status => "POST", :comment => "Fixed in shabla")
 
       bz.last_command.should include("modify")
-      bz.last_command.should include("--status=\"POST\"")
+      bz.last_command.should include("--status=POST")
       bz.last_command.should include("948972")
-      bz.last_command.should include("Fixed in shabla")
+      bz.last_command.should include("Fixed\\ in\\ shabla")
     end
 
     it "when the bugzilla modify command succeeds for a Fixnum BZ" do
       bz.modify(948972, :status => "POST")
 
       bz.last_command.should include("modify")
-      bz.last_command.should include("--status=\"POST\"")
+      bz.last_command.should include("--status=POST")
       bz.last_command.should include("948972")
     end
 
@@ -107,7 +106,7 @@ describe RubyBugzilla do
       bz.modify("948972", :status => "POST")
 
       bz.last_command.should include("modify")
-      bz.last_command.should include("--status=\"POST\"")
+      bz.last_command.should include("--status=POST")
       bz.last_command.should include("948972")
     end
   end
