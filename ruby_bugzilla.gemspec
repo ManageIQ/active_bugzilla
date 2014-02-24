@@ -29,5 +29,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rspec"
   spec.add_development_dependency "coveralls"
 
-  spec.add_dependency "linux_admin", "~> 0.5.7"
+  spec.add_dependency "awesome_spawn", "~> 1.0.0"
 end
