@@ -1,3 +1,3 @@
-class RubyBugzilla
+module RubyBugzilla
   VERSION = "0.5.2"
 end
