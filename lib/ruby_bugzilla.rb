@@ -1,3 +1,4 @@
+require 'ruby_bugzilla/version'
 require 'awesome_spawn'
 require 'fileutils'
 require 'tempfile'
