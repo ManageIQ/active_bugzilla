@@ -16,9 +16,9 @@ describe RubyBugzilla::ServiceViaXmlrpc do
       output = {}
 
       allow(::XMLRPC::Client).to receive(:new).and_return(double('xmlrpc_client', :call => output))
-      matches = bz.query(94_897_099)
-      matches.should be_kind_of(Array)
-      matches.should be_empty
+      matches = bz.query(94897099)
+      expect(matches).to be_kind_of(Array)
+      expect(matches).to be_empty
     end
 
     it "when producing valid output" do
@@ -35,11 +35,11 @@ describe RubyBugzilla::ServiceViaXmlrpc do
       allow(::XMLRPC::Client).to receive(:new).and_return(double('xmlrpc_client', :call => output))
       existing_bz = bz.query("948972").first
 
-      bz.last_command.should include("Bug.get")
+      expect(bz.last_command).to include("Bug.get")
 
-      existing_bz["priority"].should == "unspecified"
-      existing_bz["keywords"].should == ["ZStream"]
-      existing_bz["cc"].should       == ["calvin@redhat.com", "hobbes@RedHat.com"]
+      expect(existing_bz["priority"]).to eq("unspecified")
+      expect(existing_bz["keywords"]).to eq(["ZStream"])
+      expect(existing_bz["cc"]).to eq(["calvin@redhat.com", "hobbes@RedHat.com"])
     end
   end
 
@@ -98,9 +98,9 @@ describe RubyBugzilla::ServiceViaXmlrpc do
       allow(::XMLRPC::Client).to receive(:new).and_return(double('xmlrpc_create', :call => output))
       new_bz_id = bz.clone("948972")
 
-      bz.last_command.should include("Bug.create")
+      expect(bz.last_command).to include("Bug.create")
 
-      new_bz_id.should == output["id"]
+      expect(new_bz_id).to eq(output["id"])
     end
 
     it "when providing override values" do
@@ -142,9 +142,9 @@ describe RubyBugzilla::ServiceViaXmlrpc do
       allow(::XMLRPC::Client).to receive(:new).and_return(double('xmlrpc_create', :call => output))
       new_bz_id = bz.clone("948972", "assigned_to" => "Ham@NASA.gov", "target_release" => ["2.2.0"])
 
-      bz.last_command.should include("Bug.create")
+      expect(bz.last_command).to include("Bug.create")
 
-      new_bz_id.should == output["id"]
+      expect(new_bz_id).to eq(output["id"])
     end
   end
 end
