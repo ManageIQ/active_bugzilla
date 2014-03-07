@@ -1,5 +1,13 @@
 module RubyBugzilla
   class Base
+    def self.service=(service)
+      @@service = service
+    end
+
+    def self.service
+      @@service
+    end
+
     private
 
     def normalize_timestamp(timestamp)
