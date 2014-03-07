@@ -16,6 +16,11 @@ module RubyBugzilla
                             60)
     end
 
+    # http://www.bugzilla.org/docs/4.2/en/html/api/Bugzilla/WebService/Bug.html#fields
+    def fields(params = {})
+      execute('fields', params)['fields']
+    end
+
     # http://www.bugzilla.org/docs/4.2/en/html/api/Bugzilla/WebService/Bug.html#get
     def get(bug_ids, include_fields = DEFAULT_FIELDS_TO_INCLUDE)
       bug_ids = Array(bug_ids)
