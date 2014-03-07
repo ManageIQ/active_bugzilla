@@ -62,11 +62,7 @@ module RubyBugzilla
     end
 
     def self.normalize_attributes_to_xmlrpc(hash)
-      TIMESTAMP_RENAMES.each do |bug_key, xmlrpc_key|
-        hash[xmlrpc_key] = hash.delete(bug_key)
-      end
-
-      ATTRIBUTE_RENAMES.each do |bug_key, xmlrpc_key|
+      (TIMESTAMP_RENAMES.to_a + ATTRIBUTE_RENAMES.to_a).each do |bug_key, xmlrpc_key|
         hash[xmlrpc_key] = hash.delete(bug_key)
       end
 
