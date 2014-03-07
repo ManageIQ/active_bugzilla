@@ -1,126 +1,11 @@
-require 'awesome_spawn'
-require 'fileutils'
-require 'tempfile'
-require "xmlrpc/client"
-
 module RubyBugzilla
-  class Service
-    CLONE_FIELDS = [
-      :assigned_to,
-      :cc,
-      :cf_devel_whiteboard,
-      :cf_internal_whiteboard,
-      :comments,
-      :component,
-      :description,
-      :groups,
-      :keywords,
-      :op_sys,
-      :platform,
-      :priority,
-      :product,
-      :qa_contact,
-      :severity,
-      :summary,
-      :target_release,
-      :url,
-      :version,
-      :whiteboard
-    ]
-
-    DEFAULT_FIELDS_TO_INCLUDE = [
-      :actual_time,
-      :alias,
-      :assigned_to,
-      :blocks,
-      :cc,
-      :classification,
-      :comments,
-      :component,
-      :creator,
-      :depends_on,
-      :description,
-      :dupe_of,
-      :estimated_time,
-      :flags,
-      :keywords,
-      :last_change_time,
-      :platform,
-      :priority,
-      :product,
-      :qa_contact,
-      :remaining_time,
-      :resolution,
-      :severity,
-      :status,
-      :summary,
-      :target_release,
-      :url,
-      :version,
-    ]
-
-    CMD = `which bugzilla`.chomp
-    COOKIES_FILE = File.expand_path('~/.bugzillacookies')
-
-    def self.installed?
-      File.exists?(CMD)
+  class Service < ServiceBase
+    def xmlrpc_service
+      @xmlrpc_service ||= ServiceViaXmlrpc.new(bugzilla_uri, username, password)
     end
 
-    attr_accessor :bugzilla_uri, :username, :password, :last_command, :xmlrpc
-    attr_reader   :bugzilla_request_uri, :bugzilla_request_hostname
-
-    def bugzilla_uri=(value)
-      @bugzilla_request_uri = URI.join(value, "xmlrpc.cgi").to_s
-      @bugzilla_request_hostname = URI(value).hostname
-      @bugzilla_uri = value
-    end
-
-    def initialize(bugzilla_uri, username, password)
-      raise "python-bugzilla not installed" unless installed?
-      raise ArgumentError, "username and password must be set" if username.nil? || password.nil?
-
-      self.bugzilla_uri = bugzilla_uri
-      self.username     = username
-      self.password     = password
-      self.xmlrpc       = ::XMLRPC::Client.new(bugzilla_request_hostname, '/xmlrpc.cgi', 443, nil,
-        nil, username, password, true, 60)
-
-      login
-    end
-
-    def inspect
-      super.gsub(/@password=\".+?\", /, "")
-    end
-
-    def installed?
-      self.class.installed?
-    end
-
-    def clear_login!
-      cookies_file_entry = "HttpOnly_.#{bugzilla_request_hostname}"
-
-      if File.exists?(COOKIES_FILE)
-        Tempfile.open('ruby_bugzilla') do |out_file|
-          File.read(COOKIES_FILE).each_line do |line|
-            out_file.puts(line) unless line.include?(cookies_file_entry)
-          end
-          out_file.close()
-          FileUtils.mv(out_file.path, COOKIES_FILE)
-        end
-      end
-    end
-
-    def login
-      params = {}
-      params["--debug"] = nil
-      params["login"]   = [username, password]
-
-      begin
-        execute_shell(params)
-      rescue
-        clear_login! # A failed login attempt could result in a corrupt COOKIES_FILE
-        raise
-      end
+    def python_service
+      @python_service ||= ServiceViaPython.new(bugzilla_uri, username, password)
     end
 
     # Query for existing bugs
@@ -143,13 +28,7 @@ module RubyBugzilla
     #     of output, with <tt>%{}</tt> as the interpolater.
     # @return [String] The command output
     def query(options)
-      raise ArgumentError, "options must be specified" if options.empty?
-
-      params = {}
-      params["query"] = nil
-      set_params_options(params, options)
-
-      execute_shell(params)
+      python_service.query(options)
     end
 
     # Modify an existing bug or set of bugs
@@ -171,15 +50,7 @@ module RubyBugzilla
     #   * <tt>:comment</tt> - Add a comment
     # @return [String] The command output
     def modify(bug_ids, options)
-      bug_ids = Array(bug_ids)
-      raise ArgumentError, "bug_ids and options must be specified" if bug_ids.empty? || options.empty?
-      raise ArgumentError, "bug_ids must be numeric" unless bug_ids.all? {|id| id.to_s =~ /^\d+$/ }
-
-      params = {}
-      params["modify"] = bug_ids
-      set_params_options(params, options)
-
-      execute_shell(params)
+      python_service.modify(bug_ids, options)
     end
 
     # Clone of an existing bug
@@ -194,29 +65,7 @@ module RubyBugzilla
     #   * <tt>:assigned_to</tt> - The person to assign the new cloned bug to.
     # @return [Fixnum] The bug id to the new, cloned, bug.
     def clone(bug_id, overrides={})
-      raise ArgumentError, "bug_id must be numeric" unless bug_id.to_s =~ /^\d+$/
-
-      existing_bz = xmlrpc_bug_query(bug_id, CLONE_FIELDS).first
-
-      clone_description, clone_comment_is_private = assemble_clone_description(existing_bz)
-
-      params = {}
-      CLONE_FIELDS.each do |field|
-        next if field == :comments
-        params[field] = existing_bz[field.to_s]
-      end
-
-      # Apply overrides
-      overrides.each do |param, value|
-        params[param] = value
-      end
-
-      # Apply base clone fields
-      params[:cf_clone_of]        = bug_id
-      params[:description]        = clone_description
-      params[:comment_is_private] = clone_comment_is_private
-
-      execute_xmlrpc('create', params)[:id.to_s]
+      xmlrpc_service.clone(bug_id, overrides)
     end
 
     # XMLRPC Bug Query of an existing bug
@@ -228,72 +77,7 @@ module RubyBugzilla
     # @param bug_id [Array, String, Fixnum] One or more bug ids to process.
     # @return [Array] Array of matching bug hashes.
     def xmlrpc_bug_query(bug_ids, include_fields = DEFAULT_FIELDS_TO_INCLUDE)
-      bug_ids = Array(bug_ids)
-      raise ArgumentError, "bug_ids must be all Numeric" unless bug_ids.all? { |id| id.to_s =~ /^\d+$/ }
-
-      params = {}
-      params[:Bugzilla_login]    = username
-      params[:Bugzilla_password] = password
-      params[:ids]               = bug_ids
-      params[:include_fields]    = include_fields
-
-      results = execute_xmlrpc('get', params)['bugs']
-      return [] if results.nil?
-      results
-    end
-
-    private
-    def assemble_clone_description(existing_bz)
-      clone_description = " +++ This bug was initially created as a clone of Bug ##{existing_bz[:id]} +++ \n"
-      clone_description << existing_bz[:description.to_s]
-
-      clone_comment_is_private = false
-      existing_bz[:comments.to_s].each do |comment|
-        clone_description << "\n\n"
-        clone_description << "*" * 70
-        clone_description << "\nFollowing comment by %s on %s\n\n" %
-          [comment['author'], comment['creation_time'].to_time]
-        clone_description << "\n\n"
-        clone_description << comment['text']
-        clone_comment_is_private = true if comment['is_private']
-      end
-
-      [clone_description, clone_comment_is_private]
-    end
-
-    def set_params_options(params, options)
-      options.each do |key,value|
-        params["--#{key}="] = value
-      end
-    end
-
-    # Execute the command using AwesomeSpawn to execute python-bugzilla shell commands.
-    def execute_shell(params)
-      params = {"--bugzilla=" => bugzilla_request_uri}.merge(params)
-
-      self.last_command = shell_command_string(CMD, params)
-      AwesomeSpawn.run!(CMD, :params => params).output
-    end
-
-    # Bypass python-bugzilla and use the xmlrpc API directly.
-    def execute_xmlrpc(action, params)
-      cmd = "Bug.#{action}"
-
-      self.last_command = xmlrpc_command_string(cmd, params)
-      xmlrpc.call(cmd, params)
-    end
-
-    # Build a printable representation of the python-bugzilla command executed.
-    def shell_command_string(cmd, params)
-      str = AwesomeSpawn.build_command_line(cmd, params)
-      str.gsub(password.shellescape, "********")
-    end
-
-    # Build a printable representation of the xmlrcp command executed.
-    def xmlrpc_command_string(cmd, params)
-      clean_params = Hash[params]
-      clean_params[:Bugzilla_password] = "********"
-      "xmlrpc.call(#{cmd}, #{clean_params})"
+      xmlrpc_service.query(bug_ids, include_fields)
     end
   end
 end
