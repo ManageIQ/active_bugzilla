@@ -42,7 +42,7 @@ module RubyBugzilla
       @raw_data ||= service.xmlrpc_bug_query(@id).first
     end
 
-    def process_attributes(hash)
+    def normalize_attributes(hash)
       hash['created_on']   = normalize_timestamp(hash.delete('creation_time'))
       hash['updated_on']   = normalize_timestamp(hash.delete('last_change_time'))
       hash['created_by']   = hash.delete('creator')
@@ -52,7 +52,7 @@ module RubyBugzilla
     end
 
     def attributes
-      @attributes ||= process_attributes(raw_data)
+      @attributes ||= normalize_attributes(raw_data)
     end
   end
 end
