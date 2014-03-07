@@ -1,5 +1,5 @@
 module RubyBugzilla
-  class Bug
+  class Bug < Base
     attr_reader :id, :service
 
     def initialize(id, service)
@@ -33,10 +33,6 @@ module RubyBugzilla
     end
 
     private
-
-    def normalize_timestamp(timestamp)
-      timestamp.respond_to?(:to_time) ? timestamp.to_time : nil
-    end
 
     def raw_data
       @raw_data ||= service.xmlrpc_bug_query(@id).first

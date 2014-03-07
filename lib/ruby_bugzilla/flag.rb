@@ -1,5 +1,5 @@
 module RubyBugzilla
-  class Flag
+  class Flag < Base
     attr_reader :bug_id, :created_on, :id, :name, :setter, :status, :type_id, :updated_on
 
     def initialize(attributes)
@@ -16,12 +16,6 @@ module RubyBugzilla
 
     def active?
       @active
-    end
-
-    private
-
-    def normalize_timestamp(timestamp)
-      timestamp.respond_to?(:to_time) ? timestamp.to_time : nil
     end
   end
 end

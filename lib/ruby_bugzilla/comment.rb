@@ -1,5 +1,5 @@
 module RubyBugzilla
-  class Comment
+  class Comment < Base
     attr_reader :bug_id, :count, :created_by, :created_on, :creator_id, :id, :text, :updated_on
 
     def initialize(attributes)
@@ -17,12 +17,6 @@ module RubyBugzilla
 
     def private?
       @private
-    end
-
-    private
-
-    def normalize_timestamp(timestamp)
-      timestamp.respond_to?(:to_time) ? timestamp.to_time : nil
     end
   end
 end
