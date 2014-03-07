@@ -5,9 +5,60 @@ require "xmlrpc/client"
 
 module RubyBugzilla
   class Service
-    CLONE_FIELDS = [:assigned_to, :cc, :cf_devel_whiteboard, :cf_internal_whiteboard, :component,
-      :groups, :keywords, :op_sys, :platform, :priority, :product, :qa_contact, :severity,
-      :summary, :target_release, :url, :version, :whiteboard, :comments, :description,]
+    CLONE_FIELDS = [
+      :assigned_to,
+      :cc,
+      :cf_devel_whiteboard,
+      :cf_internal_whiteboard,
+      :comments,
+      :component,
+      :description,
+      :groups,
+      :keywords,
+      :op_sys,
+      :platform,
+      :priority,
+      :product,
+      :qa_contact,
+      :severity,
+      :summary,
+      :target_release,
+      :url,
+      :version,
+      :whiteboard
+    ]
+
+    DEFAULT_FIELDS_TO_INCLUDE = [
+      :actual_time,
+      :alias,
+      :assigned_to,
+      :blocks,
+      :cc,
+      :classification,
+      :comments,
+      :component,
+      :creator,
+      :depends_on,
+      :description,
+      :dupe_of,
+      :estimated_time,
+      :flags,
+      :keywords,
+      :last_change_time,
+      :platform,
+      :priority,
+      :product,
+      :qa_contact,
+      :remaining_time,
+      :resolution,
+      :severity,
+      :status,
+      :summary,
+      :target_release,
+      :url,
+      :version,
+    ]
+
     CMD = `which bugzilla`.chomp
     COOKIES_FILE = File.expand_path('~/.bugzillacookies')
 
@@ -143,15 +194,15 @@ module RubyBugzilla
     #   * <tt>:assigned_to</tt> - The person to assign the new cloned bug to.
     # @return [Fixnum] The bug id to the new, cloned, bug.
     def clone(bug_id, overrides={})
-      raise ArgumentError, "bug_id must be numeric" unless bug_id.to_s =~ /^\d+$/ 
+      raise ArgumentError, "bug_id must be numeric" unless bug_id.to_s =~ /^\d+$/
 
-      existing_bz = xmlrpc_bug_query(bug_id)
+      existing_bz = xmlrpc_bug_query(bug_id, CLONE_FIELDS).first
 
       clone_description, clone_comment_is_private = assemble_clone_description(existing_bz)
 
       params = {}
       CLONE_FIELDS.each do |field|
-        next if field == :comments 
+        next if field == :comments
         params[field] = existing_bz[field.to_s]
       end
 
@@ -174,23 +225,26 @@ module RubyBugzilla
     #   # Perform an xmlrpc query for a single bug.
     #   bz.xmlrpc_bug_query(948970)
     #
-    # @param bug_id [String, Fixnum] A single bug id to process.
-    # @return [Fixnum] The bug id to the new, cloned, bug.
-    def xmlrpc_bug_query(bug_id)
-      raise ArgumentError, "bug_id must be numeric" unless bug_id.to_s =~ /^\d+$/ 
+    # @param bug_id [Array, String, Fixnum] One or more bug ids to process.
+    # @return [Array] Array of matching bug hashes.
+    def xmlrpc_bug_query(bug_ids, include_fields = DEFAULT_FIELDS_TO_INCLUDE)
+      bug_ids = Array(bug_ids)
+      raise ArgumentError, "bug_ids must be all Numeric" unless bug_ids.all? { |id| id.to_s =~ /^\d+$/ }
 
       params = {}
       params[:Bugzilla_login]    = username
       params[:Bugzilla_password] = password
-      params[:ids]               = bug_id
-      params[:include_fields]    = CLONE_FIELDS
+      params[:ids]               = bug_ids
+      params[:include_fields]    = include_fields
 
-      execute_xmlrpc('get', params)['bugs'].last
+      results = execute_xmlrpc('get', params)['bugs']
+      return [] if results.nil?
+      results
     end
 
     private
     def assemble_clone_description(existing_bz)
-      clone_description = " +++ This bug was initially created as a clone of Bug ##{existing_bz[:id.to_s]} +++ \n"
+      clone_description = " +++ This bug was initially created as a clone of Bug ##{existing_bz[:id]} +++ \n"
       clone_description << existing_bz[:description.to_s]
 
       clone_comment_is_private = false
@@ -213,7 +267,7 @@ module RubyBugzilla
       end
     end
 
-    # Execute the command using LinuxAdmin to execute python-bugzilla shell commands.
+    # Execute the command using AwesomeSpawn to execute python-bugzilla shell commands.
     def execute_shell(params)
       params = {"--bugzilla=" => bugzilla_request_uri}.merge(params)
 
