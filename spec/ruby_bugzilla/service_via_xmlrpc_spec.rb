@@ -3,20 +3,20 @@ require 'spec_helper'
 describe RubyBugzilla::ServiceViaXmlrpc do
   let(:bz) { described_class.new("http://uri.to/bugzilla", "calvin", "hobbes") }
 
-  context "#xmlrpc_bug_query" do
+  context "#get" do
     it "when no argument is specified" do
-      expect { bz.query }.to raise_error(ArgumentError)
+      expect { bz.get }.to raise_error(ArgumentError)
     end
 
     it "when an invalid argument is specified" do
-      expect { bz.query("not a Fixnum") }.to raise_error(ArgumentError)
+      expect { bz.get("not a Fixnum") }.to raise_error(ArgumentError)
     end
 
     it "when the specified bug does not exist" do
       output = {}
 
       allow(::XMLRPC::Client).to receive(:new).and_return(double('xmlrpc_client', :call => output))
-      matches = bz.query(94897099)
+      matches = bz.get(94897099)
       expect(matches).to be_kind_of(Array)
       expect(matches).to be_empty
     end
@@ -33,7 +33,7 @@ describe RubyBugzilla::ServiceViaXmlrpc do
       }
 
       allow(::XMLRPC::Client).to receive(:new).and_return(double('xmlrpc_client', :call => output))
-      existing_bz = bz.query("948972").first
+      existing_bz = bz.get("948972").first
 
       expect(bz.last_command).to include("Bug.get")
 
@@ -94,7 +94,7 @@ describe RubyBugzilla::ServiceViaXmlrpc do
         ]
       }
 
-      described_class.any_instance.stub(:query).and_return([existing_bz])
+      described_class.any_instance.stub(:get).and_return([existing_bz])
       allow(::XMLRPC::Client).to receive(:new).and_return(double('xmlrpc_create', :call => output))
       new_bz_id = bz.clone("948972")
 
@@ -138,7 +138,7 @@ describe RubyBugzilla::ServiceViaXmlrpc do
         ]
       }
 
-      described_class.any_instance.stub(:query).and_return([existing_bz])
+      described_class.any_instance.stub(:get).and_return([existing_bz])
       allow(::XMLRPC::Client).to receive(:new).and_return(double('xmlrpc_create', :call => output))
       new_bz_id = bz.clone("948972", "assigned_to" => "Ham@NASA.gov", "target_release" => ["2.2.0"])
 

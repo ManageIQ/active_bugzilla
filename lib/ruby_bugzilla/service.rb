@@ -72,12 +72,12 @@ module RubyBugzilla
     #
     # Example:
     #   # Perform an xmlrpc query for a single bug.
-    #   bz.xmlrpc_bug_query(948970)
+    #   bz.get(948970)
     #
     # @param bug_id [Array, String, Fixnum] One or more bug ids to process.
     # @return [Array] Array of matching bug hashes.
-    def xmlrpc_bug_query(bug_ids, include_fields = DEFAULT_FIELDS_TO_INCLUDE)
-      xmlrpc_service.query(bug_ids, include_fields)
+    def get(bug_ids, include_fields = DEFAULT_FIELDS_TO_INCLUDE)
+      xmlrpc_service.get(bug_ids, include_fields)
     end
   end
 end

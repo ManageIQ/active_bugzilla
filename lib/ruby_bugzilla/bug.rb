@@ -58,7 +58,7 @@ module RubyBugzilla
     end
 
     def raw_data
-      @raw_data ||= service.xmlrpc_bug_query(@id).first
+      @raw_data ||= service.get(@id).first
     end
 
     def self.normalize_attributes_to_xmlrpc(hash)

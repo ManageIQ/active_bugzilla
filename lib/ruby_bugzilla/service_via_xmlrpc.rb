@@ -16,7 +16,7 @@ module RubyBugzilla
                             60)
     end
 
-    def query(bug_ids, include_fields = DEFAULT_FIELDS_TO_INCLUDE)
+    def get(bug_ids, include_fields = DEFAULT_FIELDS_TO_INCLUDE)
       bug_ids = Array(bug_ids)
       raise ArgumentError, "bug_ids must be all Numeric" unless bug_ids.all? { |id| id.to_s =~ /^\d+$/ }
 
@@ -24,7 +24,7 @@ module RubyBugzilla
       params[:ids]            = bug_ids
       params[:include_fields] = include_fields
 
-      results = get(params)['bugs']
+      results = execute('get', params)['bugs']
       return [] if results.nil?
       results
     end
@@ -42,10 +42,6 @@ module RubyBugzilla
 
     def create(params)
       execute('create', params)
-    end
-
-    def get(params)
-      execute('get', params)
     end
 
     # Bypass python-bugzilla and use the xmlrpc API directly.
