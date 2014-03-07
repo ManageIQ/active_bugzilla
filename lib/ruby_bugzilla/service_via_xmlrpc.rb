@@ -16,6 +16,7 @@ module RubyBugzilla
                             60)
     end
 
+    # http://www.bugzilla.org/docs/4.2/en/html/api/Bugzilla/WebService/Bug.html#get
     def get(bug_ids, include_fields = DEFAULT_FIELDS_TO_INCLUDE)
       bug_ids = Array(bug_ids)
       raise ArgumentError, "bug_ids must be all Numeric" unless bug_ids.all? { |id| id.to_s =~ /^\d+$/ }
@@ -29,6 +30,7 @@ module RubyBugzilla
       results
     end
 
+    # http://www.bugzilla.org/docs/4.2/en/html/api/Bugzilla/WebService/Bug.html#search
     def search(params = {})
       params[:include_fields]   ||= DEFAULT_FIELDS_TO_INCLUDE
       params[:ids]              &&= Array(params[:id])
@@ -40,6 +42,11 @@ module RubyBugzilla
       results
     end
 
+    # http://www.bugzilla.org/docs/4.2/en/html/api/Bugzilla/WebService/Bug.html#update
+    def update(ids, params = {})
+    end
+
+    # http://www.bugzilla.org/docs/4.2/en/html/api/Bugzilla/WebService/Bug.html#create
     def create(params)
       execute('create', params)
     end
