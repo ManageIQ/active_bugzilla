@@ -21,11 +21,11 @@ module RubyBugzilla
     end
 
     def comments
-      @comments ||= attributes['comments'].sort_by(&:count).collect { |hash| BugComment.new(hash) }
+      @comments ||= attributes['comments'].sort_by(&:count).collect { |hash| Comment.new(hash) }
     end
 
     def flags
-      @flags ||= attributes['flags'].collect { |hash| BugFlag.new(hash.merge('bug_id' => @id)) }
+      @flags ||= attributes['flags'].collect { |hash| Flag.new(hash.merge('bug_id' => @id)) }
     end
 
     def attribute_names

@@ -30,7 +30,7 @@ describe RubyBugzilla::Bug do
       comments = @bug.comments
       expect(comments).to be_kind_of(Array)
       expect(comments.count).to eq(1)
-      expect(comments.first).to be_kind_of(RubyBugzilla::BugComment)
+      expect(comments.first).to be_kind_of(RubyBugzilla::Comment)
     end
 
   end

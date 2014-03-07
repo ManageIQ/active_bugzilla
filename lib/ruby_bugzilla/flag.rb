@@ -1,5 +1,5 @@
 module RubyBugzilla
-  class BugFlag
+  class Flag
     attr_reader :bug_id, :created_on, :id, :name, :setter, :status, :type_id, :updated_on
 
     def initialize(attributes)

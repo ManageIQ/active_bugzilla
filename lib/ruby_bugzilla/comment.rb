@@ -1,5 +1,5 @@
 module RubyBugzilla
-  class BugComment
+  class Comment
     attr_reader :bug_id, :count, :created_by, :created_on, :creator_id, :id, :text, :updated_on
 
     def initialize(attributes)

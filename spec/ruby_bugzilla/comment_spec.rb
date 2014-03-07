@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe RubyBugzilla::BugComment do
+describe RubyBugzilla::Comment do
   before(:each) do
     @author        = 'author@example.com'
     @bug_id        = 123
