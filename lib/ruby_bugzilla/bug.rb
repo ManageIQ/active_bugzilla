@@ -24,6 +24,10 @@ module RubyBugzilla
       @comments ||= attributes['comments'].sort_by(&:count).collect { |hash| BugComment.new(hash) }
     end
 
+    def flags
+      @flags ||= attributes['flags'].collect { |hash| BugFlag.new(hash.merge('bug_id' => @id)) }
+    end
+
     def attribute_names
       @attribute_names ||= attributes.keys.sort
     end
