@@ -83,6 +83,5 @@ module RubyBugzilla
     def search(options = {})
       xmlrpc_service.search(options)
     end
-
   end
 end
