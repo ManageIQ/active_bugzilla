@@ -79,5 +79,10 @@ module RubyBugzilla
     def get(bug_ids, include_fields = DEFAULT_FIELDS_TO_INCLUDE)
       xmlrpc_service.get(bug_ids, include_fields)
     end
+
+    def search(options = {})
+      xmlrpc_service.search(options)
+    end
+
   end
 end
