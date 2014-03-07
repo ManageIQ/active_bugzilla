@@ -1,6 +1,7 @@
 module RubyBugzilla
   class Flag < Base
-    attr_reader :bug_id, :created_on, :id, :name, :setter, :status, :type_id, :updated_on
+    attr_reader :active, :bug_id, :created_on, :id, :name, :setter, :status, :type_id, :updated_on
+    alias_method :active?, :active
 
     def initialize(attributes)
       @id         = attributes['id']
@@ -12,10 +13,6 @@ module RubyBugzilla
       @name       = attributes['name']
       @setter     = attributes['setter']
       @active     = attributes['is_active']
-    end
-
-    def active?
-      @active
     end
   end
 end
