@@ -33,7 +33,7 @@ module RubyBugzilla
     private
 
     def raw_data
-      @raw_data ||= service.xmlrpc_bug_query(@id)
+      @raw_data ||= service.xmlrpc_bug_query(@id).first
     end
   end
 end

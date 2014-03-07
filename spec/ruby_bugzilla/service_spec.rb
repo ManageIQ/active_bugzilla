@@ -124,14 +124,16 @@ describe RubyBugzilla::Service do
       output = {}
 
       allow(::XMLRPC::Client).to receive(:new).and_return(double('xmlrpc_client', :call => output))
-      expect { bz.xmlrpc_bug_query(94897099) }.to raise_error
+      matches = bz.xmlrpc_bug_query(94897099)
+      matches.should be_kind_of(Array)
+      matches.should be_empty
     end
 
     it "when producing valid output" do
       output = {
         'bugs' => [
           {
-            "priority" => "unspecified", 
+            "priority" => "unspecified",
             "keywords" => ["ZStream"],
             "cc"       => ["calvin@redhat.com", "hobbes@RedHat.com"],
           },
@@ -139,8 +141,7 @@ describe RubyBugzilla::Service do
       }
 
       allow(::XMLRPC::Client).to receive(:new).and_return(double('xmlrpc_client', :call => output))
-      existing_bz = bz.xmlrpc_bug_query("948972")
-
+      existing_bz = bz.xmlrpc_bug_query("948972").first
 
       bz.last_command.should include("Bug.get")
 
@@ -171,9 +172,9 @@ describe RubyBugzilla::Service do
       output = {"id" => 948992}
       existing_bz = {
         "description"    => "Description of problem:\n\nIt's Broken",
-        "priority"       => "unspecified", 
+        "priority"       => "unspecified",
         "assigned_to"    => "calvin@redhat.com",
-        "target_release" => ["---"], 
+        "target_release" => ["---"],
         "keywords"       => ["ZStream"],
         "cc"             => ["calvin@redhat.com", "hobbes@RedHat.com"],
         "comments"       => [
@@ -201,7 +202,7 @@ describe RubyBugzilla::Service do
           },]
       }
 
-      described_class.any_instance.stub(:xmlrpc_bug_query).and_return(existing_bz)
+      described_class.any_instance.stub(:xmlrpc_bug_query).and_return([existing_bz])
       allow(::XMLRPC::Client).to receive(:new).and_return(double('xmlrpc_create', :call => output))
       new_bz_id = bz.clone("948972")
 
@@ -244,7 +245,7 @@ describe RubyBugzilla::Service do
           },]
       }
 
-      described_class.any_instance.stub(:xmlrpc_bug_query).and_return(existing_bz)
+      described_class.any_instance.stub(:xmlrpc_bug_query).and_return([existing_bz])
       allow(::XMLRPC::Client).to receive(:new).and_return(double('xmlrpc_create', :call => output))
       new_bz_id = bz.clone("948972", {"assigned_to" => "Ham@NASA.gov", "target_release" => ["2.2.0"],} )
 
