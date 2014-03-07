@@ -29,19 +29,28 @@ module RubyBugzilla
       raise ArgumentError, "bug_ids must be all Numeric" unless bug_ids.all? { |id| id.to_s =~ /^\d+$/ }
 
       params = {}
-      params[:Bugzilla_login]    = username
-      params[:Bugzilla_password] = password
       params[:ids]               = bug_ids
       params[:include_fields]    = include_fields
 
-      results = execute('get', params)['bugs']
+      results = get(params)['bugs']
       return [] if results.nil?
       results
+    end
+
+    def create(params)
+      execute('create', params)
+    end
+
+    def get(params)
+      execute('get', params)
     end
 
     # Bypass python-bugzilla and use the xmlrpc API directly.
     def execute(action, params)
       cmd = "Bug.#{action}"
+
+      params[:Bugzilla_login]    ||= username
+      params[:Bugzilla_password] ||= password
 
       self.last_command = command_string(cmd, params)
       xmlrpc_client.call(cmd, params)

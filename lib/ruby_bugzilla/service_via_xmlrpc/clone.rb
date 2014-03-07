@@ -57,7 +57,7 @@ module RubyBugzilla
       params[:description]        = clone_description
       params[:comment_is_private] = clone_comment_is_private
 
-      execute('create', params)[:id.to_s]
+      create(params)[:id.to_s]
     end
 
     private
