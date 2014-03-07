@@ -1,22 +1,29 @@
 module RubyBugzilla
   class BugComment
-    attr_reader :author, :bug_id, :count, :creation_time, :creator_id, :id, :text, :time
+    attr_reader :bug_id, :count, :created_by, :created_on, :creator_id, :id, :text, :updated_on
 
     def initialize(attributes)
-      @author        = attributes['author']
-      @bug_id        = attributes['bug_id']
-      @count         = attributes['count']
-      @creation_time = attributes['creation_time']
-      @creator_id    = attributes['creator_id']
-      @id            = attributes['id']
-      @text          = attributes['text']
-      @time          = attributes['time']
+      @created_by = attributes['author']
+      @bug_id     = attributes['bug_id']
+      @count      = attributes['count']
+      @creator_id = attributes['creator_id']
+      @id         = attributes['id']
+      @text       = attributes['text']
 
-      @private       = attributes['is_private']
+      @created_on = normalize_timestamp attributes['creation_time']
+      @updated_on = normalize_timestamp attributes['time']
+      @private    = attributes['is_private']
     end
 
     def private?
       @private
     end
+
+    private
+
+    def normalize_timestamp(timestamp)
+      timestamp.respond_to?(:to_time) ? timestamp.to_time : nil
+    end
+
   end
 end

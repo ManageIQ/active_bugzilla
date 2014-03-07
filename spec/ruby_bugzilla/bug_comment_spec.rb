@@ -22,8 +22,8 @@ describe RubyBugzilla::BugComment do
     @bug_comment.private?.should == @is_private
   end
 
-  it "#author" do
-    @bug_comment.author.should == @author
+  it "#created_by" do
+    @bug_comment.created_by.should == @author
   end
 
   it "#bug_id" do
