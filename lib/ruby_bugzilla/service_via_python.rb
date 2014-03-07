@@ -49,25 +49,6 @@ module RubyBugzilla
       end
     end
 
-    # Query for existing bugs
-    #
-    # Example:
-    #   # Query for all NEW bugs, and return the output in a specific format.
-    #   puts bz.query(
-    #     :bug_status   => "NEW",
-    #     :outputformat => "BZ_ID: %{id} STATUS: %{bug_status} SUMMARY: %{summary}"
-    #   )
-    #   # BZ_ID: 1234 STATUS: NEW SUMMARY: Something went wrong.
-    #   # BZ_ID: 1235 STATUS: NEW SUMMARY: Another thing went wrong.
-    #
-    # @param options [Hash] Query options. Some possible values are:
-    #   * <tt>:product</tt> - A specific product to limit the query against
-    #   * <tt>:flag</tt> - Comma separated list of flags
-    #   * <tt>:bug_status</tt> - Comma separated list of bug statuses, such as NEW,
-    #     ASSIGNED, etc.
-    #   * <tt>:outputformat</tt> - A string that will be used to format each line
-    #     of output, with <tt>%{}</tt> as the interpolater.
-    # @return [String] The command output
     def query(options)
       raise ArgumentError, "options must be specified" if options.empty?
 
@@ -78,24 +59,6 @@ module RubyBugzilla
       execute_shell(params)
     end
 
-    # Modify an existing bug or set of bugs
-    #
-    # Examples:
-    #   # Set the status of multiple bugs to RELEASE_PENDING
-    #   bz.modify([948970, 948971], :status => "RELEASE_PENDING")
-    #
-    #   # Add a comment
-    #   bz.modify("948972", :comment => "whatevs")
-    #
-    #   # Set the status to POST and add a comment
-    #   bz.modify(948970, :status => "POST", :comment => "Fixed in shabla")
-    #
-    # @param bug_ids [String, Integer, Array<String>, Array<Integer>] The bug id
-    #   or ids to process.
-    # @param options [Hash] The properties to change.  Some properties include
-    #   * <tt>:status</tt> - The bug status, such as NEW, ASSIGNED, etc.
-    #   * <tt>:comment</tt> - Add a comment
-    # @return [String] The command output
     def modify(bug_ids, options)
       bug_ids = Array(bug_ids)
       raise ArgumentError, "bug_ids and options must be specified" if bug_ids.empty? || options.empty?

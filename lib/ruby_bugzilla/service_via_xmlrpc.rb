@@ -16,14 +16,6 @@ module RubyBugzilla
                             60)
     end
 
-    # XMLRPC Bug Query of an existing bug
-    #
-    # Example:
-    #   # Perform an xmlrpc query for a single bug.
-    #   bz.xmlrpc_bug_query(948970)
-    #
-    # @param bug_id [Array, String, Fixnum] One or more bug ids to process.
-    # @return [Array] Array of matching bug hashes.
     def query(bug_ids, include_fields = DEFAULT_FIELDS_TO_INCLUDE)
       bug_ids = Array(bug_ids)
       raise ArgumentError, "bug_ids must be all Numeric" unless bug_ids.all? { |id| id.to_s =~ /^\d+$/ }

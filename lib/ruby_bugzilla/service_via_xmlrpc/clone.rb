@@ -23,17 +23,6 @@ module RubyBugzilla
       :whiteboard
     ]
 
-    # Clone of an existing bug
-    #
-    # Example:
-    #   # Perform a clone of an existing bug, and return the new bug ID.
-    #   bz.clone(948970)
-    #
-    # @param bug_id [String, Fixnum] A single bug id to process.
-    # @param overrides [Hash] The properties to change from the source bug. Some properties include
-    #   * <tt>:target_release</tt> - The target release for the new cloned bug.
-    #   * <tt>:assigned_to</tt> - The person to assign the new cloned bug to.
-    # @return [Fixnum] The bug id to the new, cloned, bug.
     def clone(bug_id, overrides = {})
       raise ArgumentError, "bug_id must be numeric" unless bug_id.to_s =~ /^\d+$/
 
