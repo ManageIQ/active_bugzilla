@@ -90,7 +90,8 @@ describe RubyBugzilla::ServiceViaXmlrpc do
             "creation_time" => XMLRPC::DateTime.new(1972, 2, 14, 0, 0, 0),
             "id"            => 5782170,
             "creator_id"    => 349490
-          },]
+          },
+        ]
       }
 
       described_class.any_instance.stub(:query).and_return([existing_bz])
@@ -133,12 +134,13 @@ describe RubyBugzilla::ServiceViaXmlrpc do
             "creation_time" => XMLRPC::DateTime.new(1972, 2, 14, 0, 0, 0),
             "id"            => 5782170,
             "creator_id"    => 349490
-          },]
+          },
+        ]
       }
 
       described_class.any_instance.stub(:query).and_return([existing_bz])
       allow(::XMLRPC::Client).to receive(:new).and_return(double('xmlrpc_create', :call => output))
-      new_bz_id = bz.clone("948972", {"assigned_to" => "Ham@NASA.gov", "target_release" => ["2.2.0"],} )
+      new_bz_id = bz.clone("948972", "assigned_to" => "Ham@NASA.gov", "target_release" => ["2.2.0"])
 
       bz.last_command.should include("Bug.create")
 
