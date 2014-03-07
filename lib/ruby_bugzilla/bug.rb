@@ -2,8 +2,9 @@ module RubyBugzilla
   class Bug < Base
     attr_reader :id
 
-    def initialize(id)
-      @id = id
+    def initialize(id, attributes = {})
+      @id         = id
+      @attributes = normalize_attributes_from_xmlrpc(attributes.dup) unless attributes.empty?
     end
 
     def respond_to_missing?(meth, *args)
@@ -31,7 +32,26 @@ module RubyBugzilla
       @attribute_names ||= attributes.keys.sort
     end
 
+    def self.find(options = {})
+      options = normalize_attributes_to_xmlrpc(options)
+      service.xmlrpc_service.search(options).collect do |bug_hash|
+        Bug.new(bug_hash['id'], bug_hash)
+      end
+    end
+
     private
+
+    ATTRIBUTE_RENAMES = {
+      #   Bug       =>  XMLRPC
+      :created_by   => :creator,
+      :duplicate_id => :dupe_of,
+    }
+
+    TIMESTAMP_RENAMES = {
+      #   Bug     =>    XMLRPC
+      :created_on => :creation_time,
+      :updated_on => :last_change_time,
+    }
 
     def service
       self.class.service
@@ -41,17 +61,34 @@ module RubyBugzilla
       @raw_data ||= service.xmlrpc_bug_query(@id).first
     end
 
-    def normalize_attributes(hash)
-      hash['created_on']   = normalize_timestamp(hash.delete('creation_time'))
-      hash['updated_on']   = normalize_timestamp(hash.delete('last_change_time'))
-      hash['created_by']   = hash.delete('creator')
-      hash['duplicate_id'] = hash.delete('dupe_of')
+    def self.normalize_attributes_to_xmlrpc(hash)
+      TIMESTAMP_RENAMES.each do |bug_key, xmlrpc_key|
+        hash[xmlrpc_key] = hash.delete(bug_key)
+      end
+
+      ATTRIBUTE_RENAMES.each do |bug_key, xmlrpc_key|
+        hash[xmlrpc_key] = hash.delete(bug_key)
+      end
+
+      hash.delete_if { |k, v| v.nil? }
+      hash
+    end
+
+    def normalize_attributes_from_xmlrpc(hash)
+      TIMESTAMP_RENAMES.each do |bug_key, xmlrpc_key|
+        hash[bug_key.to_s] = normalize_timestamp(hash.delete(xmlrpc_key.to_s))
+      end
+
+      ATTRIBUTE_RENAMES.each do |bug_key, xmlrpc_key|
+        hash[bug_key.to_s] = hash.delete(xmlrpc_key.to_s)
+      end
+
       hash.delete_if { |k, v| v.nil? }
       hash
     end
 
     def attributes
-      @attributes ||= normalize_attributes(raw_data)
+      @attributes ||= normalize_attributes_from_xmlrpc(raw_data)
     end
   end
 end
