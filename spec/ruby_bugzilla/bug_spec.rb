@@ -3,9 +3,8 @@ require 'spec_helper'
 describe RubyBugzilla::Bug do
   context "#new" do
     before(:each) do
-      @id      = 123
-      @service = double(:service)
-      @bug     = described_class.new(@id, @service)
+      @id  = 123
+      @bug = described_class.new(@id)
     end
 
     it "attribute_names" do

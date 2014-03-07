@@ -1,10 +1,9 @@
 module RubyBugzilla
   class Bug < Base
-    attr_reader :id, :service
+    attr_reader :id
 
-    def initialize(id, service)
-      @id      = id
-      @service = service
+    def initialize(id)
+      @id = id
     end
 
     def respond_to_missing?(meth, *args)
@@ -33,6 +32,10 @@ module RubyBugzilla
     end
 
     private
+
+    def service
+      self.class.service
+    end
 
     def raw_data
       @raw_data ||= service.xmlrpc_bug_query(@id).first
