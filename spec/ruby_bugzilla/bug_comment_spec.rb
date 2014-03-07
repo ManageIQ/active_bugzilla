@@ -19,23 +19,23 @@ describe RubyBugzilla::BugComment do
   end
 
   it "#private?" do
-    @bug_comment.private?.should == @is_private
+    expect(@bug_comment.private?).to eq(@is_private)
   end
 
   it "#created_by" do
-    @bug_comment.created_by.should == @author
+    expect(@bug_comment.created_by).to eq(@author)
   end
 
   it "#bug_id" do
-    @bug_comment.bug_id.should == @bug_id
+    expect(@bug_comment.bug_id).to eq(@bug_id)
   end
 
   it "#id" do
-    @bug_comment.id.should == @id
+    expect(@bug_comment.id).to eq(@id)
   end
 
   it "#text" do
-    @bug_comment.text.should == @text
+    expect(@bug_comment.text).to eq(@text)
   end
 
 end

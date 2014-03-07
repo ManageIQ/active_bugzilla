@@ -3,7 +3,7 @@ require 'spec_helper'
 describe RubyBugzilla::Bug do
   context "#new" do
     before(:each) do
-      @id      = 12345
+      @id      = 123
       @service = double(:service)
       @bug     = described_class.new(@id, @service)
     end
@@ -13,14 +13,14 @@ describe RubyBugzilla::Bug do
       raw_data = {}
       keys.each { |k| raw_data[k] = 'foo' }
       @bug.stub(:raw_data).and_return(raw_data)
-      @bug.attribute_names.should == keys.sort
+      expect(@bug.attribute_names).to eq(keys.sort)
     end
 
     it "severity" do
       severity = 'foo'
       raw_data = {'severity' => severity}
       @bug.stub(:raw_data).and_return(raw_data)
-      @bug.severity.should == severity
+      expect(@bug.severity).to eq(severity)
     end
 
     it "comments" do
@@ -28,9 +28,9 @@ describe RubyBugzilla::Bug do
       raw_data = {'comments' => comments_hash}
       @bug.stub(:raw_data).and_return(raw_data)
       comments = @bug.comments
-      comments.should be_kind_of(Array)
-      comments.count.should == 1
-      comments.first.should be_kind_of(RubyBugzilla::BugComment)
+      expect(comments).to be_kind_of(Array)
+      expect(comments.count).to eq(1)
+      expect(comments.first).to be_kind_of(RubyBugzilla::BugComment)
     end
 
   end
