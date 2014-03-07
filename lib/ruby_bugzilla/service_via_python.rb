@@ -30,7 +30,7 @@ module RubyBugzilla
           File.read(COOKIES_FILE).each_line do |line|
             out_file.puts(line) unless line.include?(cookies_file_entry)
           end
-          out_file.close()
+          out_file.close
           FileUtils.mv(out_file.path, COOKIES_FILE)
         end
       end
@@ -99,7 +99,7 @@ module RubyBugzilla
     def modify(bug_ids, options)
       bug_ids = Array(bug_ids)
       raise ArgumentError, "bug_ids and options must be specified" if bug_ids.empty? || options.empty?
-      raise ArgumentError, "bug_ids must be numeric" unless bug_ids.all? {|id| id.to_s =~ /^\d+$/ }
+      raise ArgumentError, "bug_ids must be numeric" unless bug_ids.all? { |id| id.to_s =~ /^\d+$/ }
 
       params = {}
       params["modify"] = bug_ids
@@ -109,8 +109,9 @@ module RubyBugzilla
     end
 
     private
+
     def set_params_options(params, options)
-      options.each do |key,value|
+      options.each do |key, value|
         params["--#{key}="] = value
       end
     end
