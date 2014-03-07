@@ -47,7 +47,7 @@ module RubyBugzilla
       hash['updated_on']   = normalize_timestamp(hash.delete('last_change_time'))
       hash['created_by']   = hash.delete('creator')
       hash['duplicate_id'] = hash.delete('dupe_of')
-      hash.delete_if { |k,v| v.nil? }
+      hash.delete_if { |k, v| v.nil? }
       hash
     end
 

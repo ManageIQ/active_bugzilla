@@ -9,23 +9,23 @@ describe RubyBugzilla::Bug do
     end
 
     it "attribute_names" do
-      keys = ['severity', 'priority']
+      keys = %w(severity priority)
       raw_data = {}
-      keys.each { |k| raw_data[k] = 'foo'}
+      keys.each { |k| raw_data[k] = 'foo' }
       @bug.stub(:raw_data).and_return(raw_data)
       @bug.attribute_names.should == keys.sort
     end
 
     it "severity" do
       severity = 'foo'
-      raw_data = { 'severity' => severity }
+      raw_data = {'severity' => severity}
       @bug.stub(:raw_data).and_return(raw_data)
       @bug.severity.should == severity
     end
 
     it "comments" do
       comments_hash = [{'id' => 1}]
-      raw_data = { 'comments' => comments_hash }
+      raw_data = {'comments' => comments_hash}
       @bug.stub(:raw_data).and_return(raw_data)
       comments = @bug.comments
       comments.should be_kind_of(Array)

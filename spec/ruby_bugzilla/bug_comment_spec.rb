@@ -3,7 +3,7 @@ require 'spec_helper'
 describe RubyBugzilla::BugComment do
   before(:each) do
     @author        = 'author@example.com'
-    @bug_id        = 12345
+    @bug_id        = 123
     @count         = 0
     @id            = 42
     @text          = "This is a comment"

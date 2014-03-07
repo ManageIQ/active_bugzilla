@@ -124,7 +124,7 @@ describe RubyBugzilla::Service do
       output = {}
 
       allow(::XMLRPC::Client).to receive(:new).and_return(double('xmlrpc_client', :call => output))
-      matches = bz.xmlrpc_bug_query(94897099)
+      matches = bz.xmlrpc_bug_query(94_897_099)
       matches.should be_kind_of(Array)
       matches.should be_empty
     end
