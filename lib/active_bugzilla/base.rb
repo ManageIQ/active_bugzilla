@@ -1,4 +1,4 @@
-module RubyBugzilla
+module ActiveBugzilla
   class Base
     def self.service=(service)
       @@service = service

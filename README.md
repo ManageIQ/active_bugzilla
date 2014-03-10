@@ -6,7 +6,7 @@
 [![Coverage Status](https://coveralls.io/repos/ManageIQ/ruby_bugzilla/badge.png?branch=master)](https://coveralls.io/r/ManageIQ/ruby_bugzilla)
 [![Dependency Status](https://gemnasium.com/ManageIQ/ruby_bugzilla.png)](https://gemnasium.com/ManageIQ/ruby_bugzilla)
 
-A Ruby wrapper around the python-bugzilla CLI for easy access to the Bugzilla API
+ActiveBugzilla is an ActiveRecord like interface to the Bugzilla API.
 
 ## Prerequisites
 
@@ -30,7 +30,7 @@ python-bugzilla uses pycurl and expects it to be installed.
 
 Add this line to your application's Gemfile:
 
-    gem 'ruby_bugzilla'
+    gem 'active_bugzilla'
 
 And then execute:
 
@@ -38,15 +38,14 @@ And then execute:
 
 Or install it yourself as:
 
-    $ gem install ruby_bugzilla
+    $ gem install active_bugzilla
 
 ## Example Usage
 
 ```ruby
-bz = RubyBugzilla.new("http://uri.to/bugzilla", "username", "password")
-bz.login
-output = bz.query(:bug_status => "NEW")
-bz.modify([928134, 932439], :status => "RELEASE_PENDING", :comment => "Looks good")
+service = ActiveBugzilla::Service.new("http://uri.to/bugzilla", username, password)
+ActiveBugzilla::Base.service = service
+bugs = ActiveBugzilla::Bug.find(:product => product_name, :status => "NEW")
 ```
 
 ## Contributing

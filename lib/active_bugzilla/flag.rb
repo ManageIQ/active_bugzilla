@@ -1,4 +1,4 @@
-module RubyBugzilla
+module ActiveBugzilla
   class Flag < Base
     attr_reader :active, :bug_id, :created_on, :id, :name, :setter, :status, :type_id, :updated_on
     alias_method :active?, :active

@@ -21,4 +21,4 @@ begin
 rescue LoadError
 end
 
-require 'ruby_bugzilla'
+require 'active_bugzilla'

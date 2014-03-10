@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe RubyBugzilla::Bug do
+describe ActiveBugzilla::Bug do
   context "#new" do
     before(:each) do
       @id  = 123
@@ -29,7 +29,7 @@ describe RubyBugzilla::Bug do
       comments = @bug.comments
       expect(comments).to be_kind_of(Array)
       expect(comments.count).to eq(1)
-      expect(comments.first).to be_kind_of(RubyBugzilla::Comment)
+      expect(comments.first).to be_kind_of(ActiveBugzilla::Comment)
     end
 
   end

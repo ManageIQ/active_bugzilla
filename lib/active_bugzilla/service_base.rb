@@ -1,4 +1,4 @@
-module RubyBugzilla
+module ActiveBugzilla
   class ServiceBase
     attr_accessor :bugzilla_uri, :username, :password, :last_command
     attr_reader   :bugzilla_request_uri, :bugzilla_request_hostname

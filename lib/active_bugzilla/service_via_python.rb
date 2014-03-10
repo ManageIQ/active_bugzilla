@@ -1,6 +1,6 @@
 require 'awesome_spawn'
 
-module RubyBugzilla
+module ActiveBugzilla
   class ServiceViaPython < ServiceBase
     CMD = `which bugzilla`.chomp
     COOKIES_FILE = File.expand_path('~/.bugzillacookies')

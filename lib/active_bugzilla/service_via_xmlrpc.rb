@@ -1,7 +1,7 @@
 require 'xmlrpc/client'
-require 'ruby_bugzilla/service_via_xmlrpc/clone'
+require 'active_bugzilla/service_via_xmlrpc/clone'
 
-module RubyBugzilla
+module ActiveBugzilla
   class ServiceViaXmlrpc < ServiceBase
     def xmlrpc_client
       @xmlrpc_client ||= ::XMLRPC::Client.new(

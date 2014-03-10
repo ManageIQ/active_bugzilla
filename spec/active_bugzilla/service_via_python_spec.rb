@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe RubyBugzilla::ServiceViaPython do
+describe ActiveBugzilla::ServiceViaPython do
   let(:bz) { described_class.new("http://uri.to/bugzilla", "calvin", "hobbes") }
 
   before do

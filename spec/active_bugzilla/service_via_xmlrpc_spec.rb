@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe RubyBugzilla::ServiceViaXmlrpc do
+describe ActiveBugzilla::ServiceViaXmlrpc do
   let(:bz) { described_class.new("http://uri.to/bugzilla", "calvin", "hobbes") }
 
   context "#get" do

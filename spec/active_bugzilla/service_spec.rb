@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe RubyBugzilla::Service do
+describe ActiveBugzilla::Service do
   let(:bz) { described_class.new("http://uri.to/bugzilla", "calvin", "hobbes") }
 
   context "#new" do
