@@ -1,21 +1,22 @@
 # coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'ruby_bugzilla/version'
+require 'active_bugzilla/version'
 
 Gem::Specification.new do |spec|
   authors_hash = {
-    "Joe VLcek"  => "jvlcek@redhat.com",
-    "Jason Frey" => "jfrey@redhat.com",
+    "Joe VLcek"      => "jvlcek@redhat.com",
+    "Jason Frey"     => "jfrey@redhat.com",
+    "Oleg Barenboim" => "chessbyte@gmail.com",
   }
 
-  spec.name          = "ruby_bugzilla"
-  spec.version       = RubyBugzilla::VERSION
+  spec.name          = "active_bugzilla"
+  spec.version       = ActiveBugzilla::VERSION
   spec.authors       = authors_hash.keys
   spec.email         = authors_hash.values
-  spec.description   = %q{RubyBugzilla is a Ruby wrapper around the python-bugzilla CLI for easy access to the Bugzilla API.}
-  spec.summary       = %q{RubyBugzilla is a Ruby wrapper around the python-bugzilla CLI for easy access to the Bugzilla API.}
-  spec.homepage      = "http://github.com/ManageIQ/ruby_bugzilla"
+  spec.description   = %q{ActiveBugzilla is an ActiveRecord like interface to the Bugzilla API.}
+  spec.summary       = %q{ActiveBugzilla is an ActiveRecord like interface to the Bugzilla API.}
+  spec.homepage      = "http://github.com/ManageIQ/active_bugzilla"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files -- lib/*`.split("\n")

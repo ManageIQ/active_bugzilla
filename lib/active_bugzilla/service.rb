@@ -1,4 +1,4 @@
-module RubyBugzilla
+module ActiveBugzilla
   class Service < ServiceBase
     def xmlrpc_service
       @xmlrpc_service ||= ServiceViaXmlrpc.new(bugzilla_uri, username, password)

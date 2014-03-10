@@ -1,4 +1,4 @@
-module RubyBugzilla
+module ActiveBugzilla
   class Bug < Base
     attr_reader :id
 

@@ -1,4 +1,4 @@
-module RubyBugzilla
+module ActiveBugzilla
   class Comment < Base
     attr_reader :bug_id, :count, :created_by, :created_on, :creator_id, :id, :private, :text, :updated_on
     alias_method :private?, :private

@@ -1,4 +1,4 @@
-module RubyBugzilla
+module ActiveBugzilla
   class ServiceViaXmlrpc < ServiceBase
     CLONE_FIELDS = [
       :assigned_to,
