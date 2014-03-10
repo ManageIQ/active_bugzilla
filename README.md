@@ -1,10 +1,10 @@
 # RubyBugzilla
 
-[![Gem Version](https://badge.fury.io/rb/ruby_bugzilla.png)](http://badge.fury.io/rb/ruby_bugzilla)
-[![Build Status](https://travis-ci.org/ManageIQ/ruby_bugzilla.png)](https://travis-ci.org/ManageIQ/ruby_bugzilla)
-[![Code Climate](https://codeclimate.com/github/ManageIQ/ruby_bugzilla.png)](https://codeclimate.com/github/ManageIQ/ruby_bugzilla)
-[![Coverage Status](https://coveralls.io/repos/ManageIQ/ruby_bugzilla/badge.png?branch=master)](https://coveralls.io/r/ManageIQ/ruby_bugzilla)
-[![Dependency Status](https://gemnasium.com/ManageIQ/ruby_bugzilla.png)](https://gemnasium.com/ManageIQ/ruby_bugzilla)
+[![Gem Version](https://badge.fury.io/rb/active_bugzilla.png)](http://badge.fury.io/rb/active_bugzilla)
+[![Build Status](https://travis-ci.org/ManageIQ/active_bugzilla.png)](https://travis-ci.org/ManageIQ/active_bugzilla)
+[![Code Climate](https://codeclimate.com/github/ManageIQ/active_bugzilla.png)](https://codeclimate.com/github/ManageIQ/active_bugzilla)
+[![Coverage Status](https://coveralls.io/repos/ManageIQ/active_bugzilla/badge.png?branch=master)](https://coveralls.io/r/ManageIQ/active_bugzilla)
+[![Dependency Status](https://gemnasium.com/ManageIQ/active_bugzilla.png)](https://gemnasium.com/ManageIQ/active_bugzilla)
 
 ActiveBugzilla is an ActiveRecord like interface to the Bugzilla API.
 
