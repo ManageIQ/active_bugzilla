@@ -34,6 +34,18 @@ module ActiveBugzilla
       :version,
     ]
 
+    def self.timeout=(value)
+      @@timeout = value
+    end
+
+    def self.timeout
+      defined?(@@timeout) && @@timeout
+    end
+
+    def timeout
+      self.class.timeout
+    end
+
     def bugzilla_uri=(value)
       @bugzilla_request_uri      = URI.join(value, "xmlrpc.cgi").to_s
       @bugzilla_request_hostname = URI(value).hostname

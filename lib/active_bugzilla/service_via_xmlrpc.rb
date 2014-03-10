@@ -3,6 +3,8 @@ require 'active_bugzilla/service_via_xmlrpc/clone'
 
 module ActiveBugzilla
   class ServiceViaXmlrpc < ServiceBase
+    DEFAULT_TIMEOUT  = 120
+
     def xmlrpc_client
       @xmlrpc_client ||= ::XMLRPC::Client.new(
                             bugzilla_request_hostname,
@@ -13,7 +15,7 @@ module ActiveBugzilla
                             username,
                             password,
                             true,
-                            60)
+                            timeout || DEFAULT_TIMEOUT)
     end
 
     # http://www.bugzilla.org/docs/4.2/en/html/api/Bugzilla/WebService/Bug.html#fields
