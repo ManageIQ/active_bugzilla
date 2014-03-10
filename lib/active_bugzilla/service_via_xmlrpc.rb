@@ -3,18 +3,23 @@ require 'active_bugzilla/service_via_xmlrpc/clone'
 
 module ActiveBugzilla
   class ServiceViaXmlrpc < ServiceBase
-    DEFAULT_TIMEOUT  = 120
+    DEFAULT_CGI_PATH   = '/xmlrpc.cgi'
+    DEFAULT_PORT       = 443
+    DEFAULT_PROXY_HOST = nil
+    DEFAULT_PROXY_PORT = nil
+    DEFAULT_USE_SSL    = true
+    DEFAULT_TIMEOUT    = 120
 
     def xmlrpc_client
       @xmlrpc_client ||= ::XMLRPC::Client.new(
                             bugzilla_request_hostname,
-                            '/xmlrpc.cgi',
-                            443,
-                            nil,
-                            nil,
+                            DEFAULT_CGI_PATH,
+                            DEFAULT_PORT,
+                            DEFAULT_PROXY_HOST,
+                            DEFAULT_PROXY_PORT,
                             username,
                             password,
-                            true,
+                            DEFAULT_USE_SSL,
                             timeout || DEFAULT_TIMEOUT)
     end
 
