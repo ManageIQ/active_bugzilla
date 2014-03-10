@@ -1,4 +1,4 @@
-# RubyBugzilla
+# ActiveBugzilla
 
 [![Gem Version](https://badge.fury.io/rb/active_bugzilla.png)](http://badge.fury.io/rb/active_bugzilla)
 [![Build Status](https://travis-ci.org/ManageIQ/active_bugzilla.png)](https://travis-ci.org/ManageIQ/active_bugzilla)

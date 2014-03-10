@@ -26,7 +26,7 @@ module ActiveBugzilla
       cookies_file_entry = "HttpOnly_.#{bugzilla_request_hostname}"
 
       if File.exists?(COOKIES_FILE)
-        Tempfile.open('ruby_bugzilla') do |out_file|
+        Tempfile.open('active_bugzilla') do |out_file|
           File.read(COOKIES_FILE).each_line do |line|
             out_file.puts(line) unless line.include?(cookies_file_entry)
           end
