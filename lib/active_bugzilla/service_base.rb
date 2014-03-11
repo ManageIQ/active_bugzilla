@@ -46,6 +46,18 @@ module ActiveBugzilla
       self.class.timeout
     end
 
+    def self.product=(value)
+      @@product = value
+    end
+
+    def self.product
+      defined?(@@product) && @@product
+    end
+
+    def product
+      self.class.product
+    end
+
     def bugzilla_uri=(value)
       @bugzilla_request_uri      = URI.join(value, "xmlrpc.cgi").to_s
       @bugzilla_request_hostname = URI(value).hostname
