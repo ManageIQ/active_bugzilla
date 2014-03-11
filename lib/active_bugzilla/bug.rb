@@ -25,7 +25,7 @@ module ActiveBugzilla
     end
 
     def flags
-      @flags ||= attributes['flags'].collect { |hash| Flag.new(hash.merge('bug_id' => @id)) }
+      @flags ||= raw_flags.collect { |hash| Flag.new(hash.merge('bug_id' => @id)) }
     end
 
     def attribute_names
@@ -63,6 +63,15 @@ module ActiveBugzilla
 
     def raw_data
       @raw_data ||= service.get(@id).first
+    end
+
+    def raw_flags
+      @raw_flags ||= (attributes['flags'] || raw_attribute('flags'))
+    end
+
+    def raw_attribute(key)
+      @raw_attributes      ||= {}
+      @raw_attributes[key] ||= service.get(@id, [key]).first[key]
     end
 
     def self.normalize_attributes_to_xmlrpc(hash)
