@@ -83,5 +83,9 @@ module ActiveBugzilla
     def search(options = {})
       xmlrpc_service.search(options)
     end
+
+    def fields(options = {})
+      xmlrpc_service.fields(options)
+    end
   end
 end

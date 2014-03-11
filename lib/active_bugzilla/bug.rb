@@ -32,6 +32,10 @@ module ActiveBugzilla
       @attribute_names ||= attributes.keys.sort
     end
 
+    def self.fields
+      @fields ||= service.fields.collect { |field_hash| Field.new(field_hash) }
+    end
+
     def self.find(options = {})
       options = normalize_attributes_to_xmlrpc(options)
       service.xmlrpc_service.search(options).collect do |bug_hash|
