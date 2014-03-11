@@ -48,6 +48,7 @@ module ActiveBugzilla
       params[:ids]              &&= Array(params[:id])
       params[:creation_time]    &&= to_xmlrpc_timestamp(params[:creation_time])
       params[:last_change_time] &&= to_xmlrpc_timestamp(params[:last_change_time])
+      params[:product]          ||= product
 
       results = execute('search', params)['bugs']
       return [] if results.nil?
