@@ -21,7 +21,7 @@ module ActiveBugzilla
     end
 
     def comments
-      @comments ||= attributes['comments'].sort_by(&:count).collect { |hash| Comment.new(hash) }
+      @comments ||= raw_comments.sort_by(&:count).collect { |hash| Comment.new(hash) }
     end
 
     def flags
@@ -72,6 +72,9 @@ module ActiveBugzilla
     def raw_attribute(key)
       @raw_attributes      ||= {}
       @raw_attributes[key] ||= service.get(@id, [key]).first[key]
+
+    def raw_comments
+      @raw_comments ||= (attributes['comments'] || service.comments(:ids => @id)['bugs'][@id.to_s]['comments'])
     end
 
     def self.normalize_attributes_to_xmlrpc(hash)

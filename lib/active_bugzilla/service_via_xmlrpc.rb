@@ -23,6 +23,11 @@ module ActiveBugzilla
                             timeout || DEFAULT_TIMEOUT)
     end
 
+    # http://www.bugzilla.org/docs/4.2/en/html/api/Bugzilla/WebService/Bug.html#comments
+    def comments(params = {})
+      execute('comments', params)
+    end
+
     # http://www.bugzilla.org/docs/4.2/en/html/api/Bugzilla/WebService/Bug.html#fields
     def fields(params = {})
       execute('fields', params)['fields']

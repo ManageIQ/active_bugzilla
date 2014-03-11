@@ -87,5 +87,9 @@ module ActiveBugzilla
     def fields(options = {})
       xmlrpc_service.fields(options)
     end
+
+    def comments(options = {})
+      xmlrpc_service.comments(options)
+    end
   end
 end
