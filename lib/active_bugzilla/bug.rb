@@ -28,8 +28,8 @@ module ActiveBugzilla
     def reload
       raw_reset
       reset_instance_variables
-      @comments = get_comments
-      @flags    = get_flags
+      @comments = Comment.instantiate_from_raw_data(raw_comments)
+      @flags    = Flag.instantiate_from_raw_data(raw_flags, @id)
       self
     end
 
@@ -51,15 +51,15 @@ module ActiveBugzilla
     end
 
     def comments
-      @comments ||= get_comments
+      @comments ||= Comment.instantiate_from_raw_data(raw_comments)
     end
 
     def flags
-      @flags ||= get_flags
+      @flags ||= Flag.instantiate_from_raw_data(raw_flags, @id)
     end
 
     def self.fields
-      @fields ||= fetch_fields.collect { |field_hash| Field.new(field_hash) }
+      @fields ||= Field.instantiate_from_raw_data(fetch_fields)
     end
 
     def self.find(options = {})
@@ -72,7 +72,7 @@ module ActiveBugzilla
     private
 
     def reset_instance_variables
-      self.attribute_names do |name|
+      attribute_names do |name|
         next if name == :id
         ivar_name = "@#{name}"
         instance_variable_set(ivar_name, raw_attribute(name))
@@ -82,18 +82,10 @@ module ActiveBugzilla
     def changed_attribute_hash
       hash = {}
       changes.each do |key, values|
-        value_from, value_to = values
+        _value_from, value_to = values
         hash[key] = value_to
       end
       hash
-    end
-
-    def get_comments
-      raw_comments.sort_by(&:count).collect { |hash| Comment.new(hash) }
-    end
-
-    def get_flags
-      raw_flags.collect { |hash| Flag.new(hash.merge('bug_id' => @id)) }
     end
   end
 end

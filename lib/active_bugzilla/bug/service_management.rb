@@ -8,6 +8,9 @@ module ActiveBugzilla::Bug::ServiceManagement
     :created_on   => :creation_time,
     :duplicate_id => :dupe_of,
     :updated_on   => :last_change_time,
+
+    # Some are absent from what Bugzilla.fields() returns
+    :actual_time  => :actual_time,
   }
 
   module ClassMethods
