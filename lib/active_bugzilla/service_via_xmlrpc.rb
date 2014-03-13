@@ -58,6 +58,8 @@ module ActiveBugzilla
 
     # http://www.bugzilla.org/docs/4.4/en/html/api/Bugzilla/WebService/Bug.html#update
     def update(ids, params = {})
+      params[:ids] = Array(ids)
+      execute('update', params)['bugs']
     end
 
     # http://www.bugzilla.org/docs/4.4/en/html/api/Bugzilla/WebService/Bug.html#create

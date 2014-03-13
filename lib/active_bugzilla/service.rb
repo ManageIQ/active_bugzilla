@@ -76,8 +76,8 @@ module ActiveBugzilla
     #
     # @param bug_id [Array, String, Fixnum] One or more bug ids to process.
     # @return [Array] Array of matching bug hashes.
-    def get(bug_ids, include_fields = DEFAULT_FIELDS_TO_INCLUDE)
-      xmlrpc_service.get(bug_ids, include_fields)
+    def get(bug_ids, options = {})
+      xmlrpc_service.get(bug_ids, options)
     end
 
     def search(options = {})
@@ -90,6 +90,10 @@ module ActiveBugzilla
 
     def comments(options = {})
       xmlrpc_service.comments(options)
+    end
+
+    def update(ids, options = {})
+      xmlrpc_service.update(ids, options)
     end
   end
 end

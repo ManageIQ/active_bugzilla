@@ -51,6 +51,14 @@ module ActiveBugzilla
       (type == 5) || KNOWN_TIMESTAMPS.include?(name)
     end
 
+    def self.instantiate_from_raw_data(data)
+      data.delete_if { |hash| hash["name"] == "longdesc" } # Another way to specify comment[0]
+      data.delete_if { |hash| hash["name"].include?(".") } # Remove things like longdescs.count
+      data.collect do |field_hash|
+        new(field_hash)
+      end
+    end
+
     private
 
     def self.field_alias(value)

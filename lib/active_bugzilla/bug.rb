@@ -18,16 +18,48 @@ module ActiveBugzilla
       end if attributes
     end
 
+    def save
+      return if changes.empty?
+      update_attributes(changed_attribute_hash)
+      @changed_attributes.clear
+      reload
+    end
+
+    def reload
+      raw_reset
+      reset_instance_variables
+      @comments = Comment.instantiate_from_raw_data(raw_comments)
+      @flags    = Flag.instantiate_from_raw_data(raw_flags, @id)
+      self
+    end
+
+    def update_attributes(attributes)
+      attributes.delete(:id)
+
+      attributes.each do |name, value|
+        raise "Unknown Attribute #{name}" unless attribute_names.include?(name.to_sym)
+        ivar_name = "@#{name}"
+        instance_variable_set(ivar_name, value)
+        @changed_attributes.delete(name)
+      end
+
+      raw_update(attributes) unless attributes.empty?
+    end
+
+    def update_attribute(key, value)
+      update_attributes(key => value)
+    end
+
     def comments
-      @comments ||= raw_comments.sort_by(&:count).collect { |hash| Comment.new(hash) }
+      @comments ||= Comment.instantiate_from_raw_data(raw_comments)
     end
 
     def flags
-      @flags ||= raw_flags.collect { |hash| Flag.new(hash.merge('bug_id' => @id)) }
+      @flags ||= Flag.instantiate_from_raw_data(raw_flags, @id)
     end
 
     def self.fields
-      @fields ||= fetch_fields.collect { |field_hash| Field.new(field_hash) }
+      @fields ||= Field.instantiate_from_raw_data(fetch_fields)
     end
 
     def self.find(options = {})
@@ -35,6 +67,25 @@ module ActiveBugzilla
       search(options).collect do |bug_hash|
         Bug.new(bug_hash)
       end
+    end
+
+    private
+
+    def reset_instance_variables
+      attribute_names do |name|
+        next if name == :id
+        ivar_name = "@#{name}"
+        instance_variable_set(ivar_name, raw_attribute(name))
+      end
+    end
+
+    def changed_attribute_hash
+      hash = {}
+      changes.each do |key, values|
+        _value_from, value_to = values
+        hash[key] = value_to
+      end
+      hash
     end
   end
 end

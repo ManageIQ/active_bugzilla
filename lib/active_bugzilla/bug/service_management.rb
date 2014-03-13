@@ -8,6 +8,9 @@ module ActiveBugzilla::Bug::ServiceManagement
     :created_on   => :creation_time,
     :duplicate_id => :dupe_of,
     :updated_on   => :last_change_time,
+
+    # Some are absent from what Bugzilla.fields() returns
+    :actual_time  => :actual_time,
   }
 
   module ClassMethods
@@ -101,6 +104,23 @@ module ActiveBugzilla::Bug::ServiceManagement
 
   def service
     self.class.service
+  end
+
+  def raw_reset
+    @raw_data       = nil
+    @raw_comments   = nil
+    @raw_flags      = nil
+    @raw_attributes = nil
+  end
+
+  def raw_update(attributes)
+    attributes = self.class.normalize_attributes_to_service(attributes)
+    result = service.update(@id, attributes).first
+
+    id = result['id']
+    raise "Error - Expected to update id <#{@id}>, but updated <#{id}>" unless id == @id
+
+    result
   end
 
   def raw_data

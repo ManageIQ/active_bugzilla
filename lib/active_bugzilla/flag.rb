@@ -14,5 +14,9 @@ module ActiveBugzilla
       @setter     = attributes['setter']
       @active     = attributes['is_active']
     end
+
+    def self.instantiate_from_raw_data(data, bug_id = nil)
+      data.collect { |hash| new(hash.merge('bug_id' => bug_id)) }
+    end
   end
 end

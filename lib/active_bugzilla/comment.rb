@@ -15,5 +15,9 @@ module ActiveBugzilla
       @updated_on = normalize_timestamp attributes['time']
       @private    = attributes['is_private']
     end
+
+    def self.instantiate_from_raw_data(data)
+      data.sort_by(&:count).collect { |hash| new(hash) }
+    end
   end
 end
