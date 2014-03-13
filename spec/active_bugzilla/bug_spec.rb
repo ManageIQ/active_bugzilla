@@ -3,21 +3,30 @@ require 'spec_helper'
 describe ActiveBugzilla::Bug do
   context "#new" do
     before(:each) do
+      @service_mapping = {
+        # Bug     => XMLRPC
+        :severity => :severity_xmlrpc,
+        :priority => :priority_xmlrpc,
+      }
+      @service = double('service')
+      ActiveBugzilla::Base.service = @service
+      described_class.stub(:generate_xmlrpc_map).and_return(@service_mapping)
+      described_class.stub(:xmlrpc_timestamps).and_return([])
       @id  = 123
-      @bug = described_class.new(@id)
+      @bug = described_class.new(:id => @id)
     end
 
     it "attribute_names" do
-      keys = %w(severity priority)
+      raw_keys = @service_mapping.values
       raw_data = {}
-      keys.each { |k| raw_data[k] = 'foo' }
+      raw_keys.each { |k| raw_data[k.to_s] = 'foo' }
       @bug.stub(:raw_data).and_return(raw_data)
-      expect(@bug.attribute_names).to eq(keys.sort)
+      expect(@bug.attribute_names).to eq(@service_mapping.keys.sort_by { |key| key.to_s })
     end
 
     it "severity" do
       severity = 'foo'
-      raw_data = {'severity' => severity}
+      raw_data = {'severity_xmlrpc' => severity}
       @bug.stub(:raw_data).and_return(raw_data)
       expect(@bug.severity).to eq(severity)
     end
