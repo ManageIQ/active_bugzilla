@@ -103,6 +103,23 @@ module ActiveBugzilla::Bug::ServiceManagement
     self.class.service
   end
 
+  def raw_reset
+    @raw_data       = nil
+    @raw_comments   = nil
+    @raw_flags      = nil
+    @raw_attributes = nil
+  end
+
+  def raw_update(attributes)
+    attributes = self.class.normalize_attributes_to_service(attributes)
+    result = service.update(@id, attributes).first
+
+    id = result['id']
+    raise "Error - Expected to update id <#{@id}>, but updated <#{id}>" unless id == @id
+
+    result
+  end
+
   def raw_data
     @raw_data ||= service.get(@id, :include_fields => self.class.default_service_attributes).first
   end
