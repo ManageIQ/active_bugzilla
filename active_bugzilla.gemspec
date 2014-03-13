@@ -31,4 +31,6 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "coveralls"
 
   spec.add_dependency "awesome_spawn", "~> 1.0.0"
+  spec.add_dependency "activemodel"
+  spec.add_dependency "activesupport"
 end
