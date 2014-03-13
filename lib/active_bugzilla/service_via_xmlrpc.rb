@@ -23,48 +23,44 @@ module ActiveBugzilla
                             timeout || DEFAULT_TIMEOUT)
     end
 
-    # http://www.bugzilla.org/docs/4.2/en/html/api/Bugzilla/WebService/Bug.html#comments
+    # http://www.bugzilla.org/docs/4.4/en/html/api/Bugzilla/WebService/Bug.html#comments
     def comments(params = {})
       execute('comments', params)
     end
 
-    # http://www.bugzilla.org/docs/4.2/en/html/api/Bugzilla/WebService/Bug.html#fields
+    # http://www.bugzilla.org/docs/4.4/en/html/api/Bugzilla/WebService/Bug.html#fields
     def fields(params = {})
       execute('fields', params)['fields']
     end
 
-    # http://www.bugzilla.org/docs/4.2/en/html/api/Bugzilla/WebService/Bug.html#get
-    def get(bug_ids, include_fields = DEFAULT_FIELDS_TO_INCLUDE)
+    # http://www.bugzilla.org/docs/4.4/en/html/api/Bugzilla/WebService/Bug.html#get
+    def get(bug_ids, params = {})
       bug_ids = Array(bug_ids)
       raise ArgumentError, "bug_ids must be all Numeric" unless bug_ids.all? { |id| id.to_s =~ /^\d+$/ }
 
-      params                  = {}
-      params[:ids]            = bug_ids
-      params[:include_fields] = include_fields
+      params[:ids] = bug_ids
 
       results = execute('get', params)['bugs']
       return [] if results.nil?
       results
     end
 
-    # http://www.bugzilla.org/docs/4.2/en/html/api/Bugzilla/WebService/Bug.html#search
+    # http://www.bugzilla.org/docs/4.4/en/html/api/Bugzilla/WebService/Bug.html#search
     def search(params = {})
-      params[:include_fields]   ||= DEFAULT_FIELDS_TO_INCLUDE
-      params[:ids]              &&= Array(params[:id])
       params[:creation_time]    &&= to_xmlrpc_timestamp(params[:creation_time])
       params[:last_change_time] &&= to_xmlrpc_timestamp(params[:last_change_time])
-      params[:product]          ||= product
+      params[:product]          ||= product if product
 
       results = execute('search', params)['bugs']
       return [] if results.nil?
       results
     end
 
-    # http://www.bugzilla.org/docs/4.2/en/html/api/Bugzilla/WebService/Bug.html#update
+    # http://www.bugzilla.org/docs/4.4/en/html/api/Bugzilla/WebService/Bug.html#update
     def update(ids, params = {})
     end
 
-    # http://www.bugzilla.org/docs/4.2/en/html/api/Bugzilla/WebService/Bug.html#create
+    # http://www.bugzilla.org/docs/4.4/en/html/api/Bugzilla/WebService/Bug.html#create
     def create(params)
       execute('create', params)
     end

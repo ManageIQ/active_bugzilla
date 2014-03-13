@@ -1,23 +1,21 @@
+require 'active_model'
+
 module ActiveBugzilla
   class Bug < Base
-    attr_reader :id
+    include ActiveModel::Validations
+    include ActiveModel::Dirty
 
-    def initialize(id, attributes = {})
-      @id         = id
-      @attributes = normalize_attributes_from_xmlrpc(attributes.dup) unless attributes.empty?
-    end
+    require_relative 'bug/service_management'
+    include ServiceManagement
 
-    def respond_to_missing?(meth, *args)
-      attribute_names.include?(meth.to_s)
-    end
+    validates_numericality_of :id
 
-    def method_missing(meth, *args, &block)
-      attribute_name = meth.to_s
-      if attribute_names.include?(attribute_name)
-        attributes[attribute_name]
-      else
-        super
-      end
+    def initialize(attributes = {})
+      attributes.each do |key, value|
+        next unless attribute_names.include?(key)
+        ivar_key = "@#{key}"
+        instance_variable_set(ivar_key, value)
+      end if attributes
     end
 
     def comments
@@ -28,79 +26,15 @@ module ActiveBugzilla
       @flags ||= raw_flags.collect { |hash| Flag.new(hash.merge('bug_id' => @id)) }
     end
 
-    def attribute_names
-      @attribute_names ||= attributes.keys.sort
-    end
-
     def self.fields
-      @fields ||= service.fields.collect { |field_hash| Field.new(field_hash) }
+      @fields ||= fetch_fields.collect { |field_hash| Field.new(field_hash) }
     end
 
     def self.find(options = {})
-      options = normalize_attributes_to_xmlrpc(options)
-      service.xmlrpc_service.search(options).collect do |bug_hash|
-        Bug.new(bug_hash['id'], bug_hash)
+      options[:include_fields] ||= [:id]
+      search(options).collect do |bug_hash|
+        Bug.new(bug_hash)
       end
-    end
-
-    private
-
-    ATTRIBUTE_RENAMES = {
-      #   Bug       =>  XMLRPC
-      :created_by   => :creator,
-      :duplicate_id => :dupe_of,
-    }
-
-    TIMESTAMP_RENAMES = {
-      #   Bug     =>    XMLRPC
-      :created_on => :creation_time,
-      :updated_on => :last_change_time,
-    }
-
-    def service
-      self.class.service
-    end
-
-    def raw_data
-      @raw_data ||= service.get(@id).first
-    end
-
-    def raw_flags
-      @raw_flags ||= (attributes['flags'] || raw_attribute('flags'))
-    end
-
-    def raw_attribute(key)
-      @raw_attributes      ||= {}
-      @raw_attributes[key] ||= service.get(@id, [key]).first[key]
-
-    def raw_comments
-      @raw_comments ||= (attributes['comments'] || service.comments(:ids => @id)['bugs'][@id.to_s]['comments'])
-    end
-
-    def self.normalize_attributes_to_xmlrpc(hash)
-      (TIMESTAMP_RENAMES.to_a + ATTRIBUTE_RENAMES.to_a).each do |bug_key, xmlrpc_key|
-        hash[xmlrpc_key] = hash.delete(bug_key)
-      end
-
-      hash.delete_if { |k, v| v.nil? }
-      hash
-    end
-
-    def normalize_attributes_from_xmlrpc(hash)
-      TIMESTAMP_RENAMES.each do |bug_key, xmlrpc_key|
-        hash[bug_key.to_s] = normalize_timestamp(hash.delete(xmlrpc_key.to_s))
-      end
-
-      ATTRIBUTE_RENAMES.each do |bug_key, xmlrpc_key|
-        hash[bug_key.to_s] = hash.delete(xmlrpc_key.to_s)
-      end
-
-      hash.delete_if { |k, v| v.nil? }
-      hash
-    end
-
-    def attributes
-      @attributes ||= normalize_attributes_from_xmlrpc(raw_data)
     end
   end
 end

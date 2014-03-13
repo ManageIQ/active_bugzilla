@@ -26,7 +26,7 @@ module ActiveBugzilla
     def clone(bug_id, overrides = {})
       raise ArgumentError, "bug_id must be numeric" unless bug_id.to_s =~ /^\d+$/
 
-      existing_bz = get(bug_id, CLONE_FIELDS).first
+      existing_bz = get(bug_id, :include_fields => CLONE_FIELDS).first
 
       clone_description, clone_comment_is_private = assemble_clone_description(existing_bz)
 
