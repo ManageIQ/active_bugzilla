@@ -92,6 +92,10 @@ module ActiveBugzilla
       xmlrpc_service.comments(options)
     end
 
+    def add_comment(bug_id, comment, options = {})
+      xmlrpc_service.add_comment(bug_id, comment, options)
+    end
+
     def update(ids, options = {})
       xmlrpc_service.update(ids, options)
     end

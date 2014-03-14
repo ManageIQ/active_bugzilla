@@ -54,6 +54,11 @@ module ActiveBugzilla
       @comments ||= Comment.instantiate_from_raw_data(raw_comments)
     end
 
+    def add_comment(comment, is_private = false)
+      comment_id = service.add_comment(@id, comment, :is_private => is_private)
+      reload
+    end
+
     def flags
       @flags ||= Flag.instantiate_from_raw_data(raw_flags, @id)
     end

@@ -28,6 +28,13 @@ module ActiveBugzilla
       execute('comments', params)
     end
 
+    # http://www.bugzilla.org/docs/4.4/en/html/api/Bugzilla/WebService/Bug.html#add_comment
+    def add_comment(bug_id, comment, params = {})
+      params[:id]      = bug_id
+      params[:comment] = comment
+      execute('add_comment', params)["id"]
+    end
+
     # http://www.bugzilla.org/docs/4.4/en/html/api/Bugzilla/WebService/Bug.html#fields
     def fields(params = {})
       execute('fields', params)['fields']
