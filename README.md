@@ -8,24 +8,6 @@
 
 ActiveBugzilla is an ActiveRecord like interface to the Bugzilla API.
 
-## Prerequisites
-
-python-bugzilla must be installed.
-
-* For Fedora/RHEL
-  * sudo yum install python-bugzilla
-* For Mac
-  * Download python-bugzilla from https://fedorahosted.org/python-bugzilla/
-  * Untar the file
-  * Run sudo setup.py install
-
-python-bugzilla uses pycurl and expects it to be installed.
-
-* For Mac
-  * Download pycurl from http://pycurl.sourceforge.net/download/
-  * Untar the file
-  * Run sudo setup.py install
-
 ## Installation
 
 Add this line to your application's Gemfile:
@@ -46,6 +28,24 @@ Or install it yourself as:
 service = ActiveBugzilla::Service.new("http://uri.to/bugzilla", username, password)
 ActiveBugzilla::Base.service = service
 bugs = ActiveBugzilla::Bug.find(:product => product_name, :status => "NEW")
+bugs.each do |bug|
+  puts "Bug ##{bug.id} - created_on=#{bug.created_on}, updated_on=#{bug.updated_on}, priority=#{bug.priority}"
+  puts "Bug Attributes: #{bug.attribute_names.inspect}"
+end
+
+bug = ActiveBugzilla::Bug.find(:id => 12345)
+puts "PRIORITY: #{bug.priority}"   # => "low"
+puts "FLAGS: #{bug.flags.inspect}" # => {"devel_ack"=>"?", "qa_ack"=>"+"}
+bug.priority = "high"
+bug.flags.delete("qa_ack")
+bug.flags["devel_ack"] = "+"
+bug.save
+puts "PRIORITY: #{bug.priority}"   # => "high"
+puts "FLAGS: #{bug.flags.inspect}" # => {"devel_ack"=>"+"}
+puts "FLAG OBJECTS: #{bug.flag_objects.inspect}" # => Array of ActiveBugzilla:Flag objects
+
+bug.add_comment("Testing")
+puts "COMMENTS: #{bug.comments.inspect}" # => Array of ActiveBugzilla:Comment objects
 ```
 
 ## Contributing
