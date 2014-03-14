@@ -55,7 +55,7 @@ module ActiveBugzilla
     end
 
     def add_comment(comment, is_private = false)
-      comment_id = service.add_comment(@id, comment, :is_private => is_private)
+      _comment_id = service.add_comment(@id, comment, :is_private => is_private)
       reload
     end
 
