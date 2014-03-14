@@ -36,6 +36,8 @@ module ActiveBugzilla::Bug::ServiceManagement
         hash[xmlrpc_key] = hash.delete(bug_key)
       end
 
+      hash[:include_fields] = normalize_include_fields_to_service(hash[:include_fields]) if hash.key?(:include_fields)
+
       hash.delete_if { |k, v| v.nil? }
       hash
     end
@@ -77,6 +79,12 @@ module ActiveBugzilla::Bug::ServiceManagement
         hash[attribute_name.to_sym] = field.name.to_sym
       end
       hash
+    end
+
+    def normalize_include_fields_to_service(include_fields)
+      include_fields.collect do |bug_key|
+        attributes_xmlrpc_map[bug_key]
+      end.uniq.compact
     end
 
     def define_attributes(names)
