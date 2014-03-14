@@ -11,6 +11,7 @@ module ActiveBugzilla::Bug::ServiceManagement
 
     # Some are absent from what Bugzilla.fields() returns
     :actual_time  => :actual_time,
+    :flags        => :flags,
   }
 
   module ClassMethods
@@ -32,6 +33,8 @@ module ActiveBugzilla::Bug::ServiceManagement
 
     def normalize_attributes_to_service(hash)
       attributes_xmlrpc_map.each do |bug_key, xmlrpc_key|
+        bug_key    = bug_key.to_sym
+        xmlrpc_key = xmlrpc_key.to_sym
         next if bug_key == xmlrpc_key
         hash[xmlrpc_key] = hash.delete(bug_key)
       end
@@ -44,6 +47,7 @@ module ActiveBugzilla::Bug::ServiceManagement
 
     def normalize_attributes_from_service(hash)
       attributes_xmlrpc_map.each do |bug_key, xmlrpc_key|
+        next unless hash.key?(xmlrpc_key.to_s)
         value = hash.delete(xmlrpc_key.to_s)
         value = normalize_timestamp(value) if xmlrpc_timestamps.include?(xmlrpc_key)
         hash[bug_key] = value
@@ -91,6 +95,8 @@ module ActiveBugzilla::Bug::ServiceManagement
       define_attribute_methods names
 
       names.each do |name|
+        next if name.to_s == 'flags'  # Flags is a special attribute
+
         ivar_name = "@#{name}"
         define_method(name) do
           return instance_variable_get(ivar_name) if instance_variable_defined?(ivar_name)
@@ -148,11 +154,6 @@ module ActiveBugzilla::Bug::ServiceManagement
     @raw_attributes ||= self.class.normalize_attributes_from_service(raw_data)
   end
 
-  def raw_attribute_get(key)
-    raw_attributes
-    @raw_attributes[key]
-  end
-
   def raw_attribute_set(key, value)
     raw_attributes
     @raw_attributes[key] = value
@@ -160,7 +161,7 @@ module ActiveBugzilla::Bug::ServiceManagement
 
   def raw_attribute(key)
     raw_attribute_set(key, fetch_attribute(key)) unless raw_attributes.key?(key)
-    raw_attribute_get(key)
+    raw_attributes[key]
   end
 
   def fetch_comments

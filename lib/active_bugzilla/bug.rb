@@ -8,6 +8,9 @@ module ActiveBugzilla
     require_relative 'bug/service_management'
     include ServiceManagement
 
+    require_relative 'bug/flags_management'
+    include FlagsManagement
+
     validates_numericality_of :id
 
     def initialize(attributes = {})
@@ -28,8 +31,8 @@ module ActiveBugzilla
     def reload
       raw_reset
       reset_instance_variables
+      reset_flags
       @comments = Comment.instantiate_from_raw_data(raw_comments)
-      @flags    = Flag.instantiate_from_raw_data(raw_flags, @id)
       self
     end
 
@@ -37,10 +40,14 @@ module ActiveBugzilla
       attributes.delete(:id)
 
       attributes.each do |name, value|
-        raise "Unknown Attribute #{name}" unless attribute_names.include?(name.to_sym)
-        ivar_name = "@#{name}"
-        instance_variable_set(ivar_name, value)
-        @changed_attributes.delete(name)
+        symbolized_name = name.to_sym
+        raise "Unknown Attribute #{name}" unless attribute_names.include?(symbolized_name)
+        public_send("#{name}=", value)
+        if symbolized_name == :flags
+          attributes[name] = flags_raw_updates
+        else
+          @changed_attributes.delete(symbolized_name)
+        end
       end
 
       raw_update(attributes) unless attributes.empty?
@@ -57,10 +64,6 @@ module ActiveBugzilla
     def add_comment(comment, is_private = false)
       _comment_id = service.add_comment(@id, comment, :is_private => is_private)
       reload
-    end
-
-    def flags
-      @flags ||= Flag.instantiate_from_raw_data(raw_flags, @id)
     end
 
     def self.fields
@@ -90,7 +93,7 @@ module ActiveBugzilla
       hash = {}
       changes.each do |key, values|
         _value_from, value_to = values
-        hash[key] = value_to
+        hash[key.to_sym] = value_to
       end
       hash
     end
