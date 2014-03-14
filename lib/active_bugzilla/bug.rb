@@ -63,7 +63,9 @@ module ActiveBugzilla
     end
 
     def self.find(options = {})
-      options[:include_fields] ||= [:id]
+      options[:include_fields] ||= []
+      options[:include_fields] << :id unless options[:include_fields].include?(:id)
+
       search(options).collect do |bug_hash|
         Bug.new(bug_hash)
       end
