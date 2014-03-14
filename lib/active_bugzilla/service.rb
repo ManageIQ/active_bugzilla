@@ -1,56 +1,132 @@
+require 'xmlrpc/client'
+
 module ActiveBugzilla
-  class Service < ServiceBase
-    def xmlrpc_service
-      @xmlrpc_service ||= ServiceViaXmlrpc.new(bugzilla_uri, username, password)
+  class Service
+    CLONE_FIELDS = [
+      :assigned_to,
+      :cc,
+      :cf_devel_whiteboard,
+      :cf_internal_whiteboard,
+      :comments,
+      :component,
+      :description,
+      :groups,
+      :keywords,
+      :op_sys,
+      :platform,
+      :priority,
+      :product,
+      :qa_contact,
+      :severity,
+      :summary,
+      :target_release,
+      :url,
+      :version,
+      :whiteboard
+    ]
+
+    attr_accessor :bugzilla_uri, :username, :password, :last_command
+    attr_reader   :bugzilla_request_uri, :bugzilla_request_hostname
+
+    def self.timeout=(value)
+      @@timeout = value
     end
 
-    def python_service
-      @python_service ||= ServiceViaPython.new(bugzilla_uri, username, password)
+    def self.timeout
+      defined?(@@timeout) && @@timeout
     end
 
-    # Query for existing bugs
+    def timeout
+      self.class.timeout
+    end
+
+    def self.product=(value)
+      @@product = value
+    end
+
+    def self.product
+      defined?(@@product) && @@product
+    end
+
+    def product
+      self.class.product
+    end
+
+    def bugzilla_uri=(value)
+      @bugzilla_request_uri      = URI.join(value, "xmlrpc.cgi").to_s
+      @bugzilla_request_hostname = URI(value).hostname
+      @bugzilla_uri              = value
+    end
+
+    def initialize(bugzilla_uri, username, password)
+      raise ArgumentError, "username and password must be set" if username.nil? || password.nil?
+
+      self.bugzilla_uri = bugzilla_uri
+      self.username     = username
+      self.password     = password
+    end
+
+    def inspect
+      super.gsub(/@password=\".+?\", /, "")
+    end
+
+    # http://www.bugzilla.org/docs/4.4/en/html/api/Bugzilla/WebService/Bug.html#comments
+    def comments(params = {})
+      execute('comments', params)
+    end
+
+    # http://www.bugzilla.org/docs/4.4/en/html/api/Bugzilla/WebService/Bug.html#add_comment
+    def add_comment(bug_id, comment, params = {})
+      params[:id]      = bug_id
+      params[:comment] = comment
+      execute('add_comment', params)["id"]
+    end
+
+    # http://www.bugzilla.org/docs/4.4/en/html/api/Bugzilla/WebService/Bug.html#fields
+    def fields(params = {})
+      execute('fields', params)['fields']
+    end
+
+    # http://www.bugzilla.org/docs/4.4/en/html/api/Bugzilla/WebService/Bug.html#get
+    # XMLRPC Bug Query of an existing bug
     #
     # Example:
-    #   # Query for all NEW bugs, and return the output in a specific format.
-    #   puts bz.query(
-    #     :bug_status   => "NEW",
-    #     :outputformat => "BZ_ID: %{id} STATUS: %{bug_status} SUMMARY: %{summary}"
-    #   )
-    #   # BZ_ID: 1234 STATUS: NEW SUMMARY: Something went wrong.
-    #   # BZ_ID: 1235 STATUS: NEW SUMMARY: Another thing went wrong.
+    #   # Perform an xmlrpc query for a single bug.
+    #   bz.get(948970)
     #
-    # @param options [Hash] Query options. Some possible values are:
-    #   * <tt>:product</tt> - A specific product to limit the query against
-    #   * <tt>:flag</tt> - Comma separated list of flags
-    #   * <tt>:bug_status</tt> - Comma separated list of bug statuses, such as NEW,
-    #     ASSIGNED, etc.
-    #   * <tt>:outputformat</tt> - A string that will be used to format each line
-    #     of output, with <tt>%{}</tt> as the interpolater.
-    # @return [String] The command output
-    def query(options)
-      python_service.query(options)
+    # @param bug_id [Array, String, Fixnum] One or more bug ids to process.
+    # @return [Array] Array of matching bug hashes.
+    def get(bug_ids, params = {})
+      bug_ids = Array(bug_ids)
+      raise ArgumentError, "bug_ids must be all Numeric" unless bug_ids.all? { |id| id.to_s =~ /^\d+$/ }
+
+      params[:ids] = bug_ids
+
+      results = execute('get', params)['bugs']
+      return [] if results.nil?
+      results
     end
 
-    # Modify an existing bug or set of bugs
-    #
-    # Examples:
-    #   # Set the status of multiple bugs to RELEASE_PENDING
-    #   bz.modify([948970, 948971], :status => "RELEASE_PENDING")
-    #
-    #   # Add a comment
-    #   bz.modify("948972", :comment => "whatevs")
-    #
-    #   # Set the status to POST and add a comment
-    #   bz.modify(948970, :status => "POST", :comment => "Fixed in shabla")
-    #
-    # @param bug_ids [String, Integer, Array<String>, Array<Integer>] The bug id
-    #   or ids to process.
-    # @param options [Hash] The properties to change.  Some properties include
-    #   * <tt>:status</tt> - The bug status, such as NEW, ASSIGNED, etc.
-    #   * <tt>:comment</tt> - Add a comment
-    # @return [String] The command output
-    def modify(bug_ids, options)
-      python_service.modify(bug_ids, options)
+    # http://www.bugzilla.org/docs/4.4/en/html/api/Bugzilla/WebService/Bug.html#search
+    def search(params = {})
+      params[:creation_time]    &&= to_xmlrpc_timestamp(params[:creation_time])
+      params[:last_change_time] &&= to_xmlrpc_timestamp(params[:last_change_time])
+      params[:product]          ||= product if product
+
+      results = execute('search', params)['bugs']
+      return [] if results.nil?
+      results
+    end
+
+    # http://www.bugzilla.org/docs/4.4/en/html/api/Bugzilla/WebService/Bug.html#update
+    def update(ids, params = {})
+      params[:ids] = Array(ids)
+      execute('update', params)['bugs']
+    end
+
+    # http://www.bugzilla.org/docs/4.4/en/html/api/Bugzilla/WebService/Bug.html#create
+    def create(params)
+      execute('create', params)
     end
 
     # Clone of an existing bug
@@ -64,40 +140,95 @@ module ActiveBugzilla
     #   * <tt>:target_release</tt> - The target release for the new cloned bug.
     #   * <tt>:assigned_to</tt> - The person to assign the new cloned bug to.
     # @return [Fixnum] The bug id to the new, cloned, bug.
-    def clone(bug_id, overrides={})
-      xmlrpc_service.clone(bug_id, overrides)
+    def clone(bug_id, overrides = {})
+      raise ArgumentError, "bug_id must be numeric" unless bug_id.to_s =~ /^\d+$/
+
+      existing_bz = get(bug_id, :include_fields => CLONE_FIELDS).first
+
+      clone_description, clone_comment_is_private = assemble_clone_description(existing_bz)
+
+      params = {}
+      CLONE_FIELDS.each do |field|
+        next if field == :comments
+        params[field] = existing_bz[field.to_s]
+      end
+
+      # Apply overrides
+      overrides.each do |param, value|
+        params[param] = value
+      end
+
+      # Apply base clone fields
+      params[:cf_clone_of]        = bug_id
+      params[:description]        = clone_description
+      params[:comment_is_private] = clone_comment_is_private
+
+      create(params)[:id.to_s]
     end
 
-    # XMLRPC Bug Query of an existing bug
-    #
-    # Example:
-    #   # Perform an xmlrpc query for a single bug.
-    #   bz.get(948970)
-    #
-    # @param bug_id [Array, String, Fixnum] One or more bug ids to process.
-    # @return [Array] Array of matching bug hashes.
-    def get(bug_ids, options = {})
-      xmlrpc_service.get(bug_ids, options)
+    # Bypass python-bugzilla and use the xmlrpc API directly.
+    def execute(action, params)
+      cmd = "Bug.#{action}"
+
+      params[:Bugzilla_login]    ||= username
+      params[:Bugzilla_password] ||= password
+
+      self.last_command = command_string(cmd, params)
+      xmlrpc_client.call(cmd, params)
     end
 
-    def search(options = {})
-      xmlrpc_service.search(options)
+    private
+
+    DEFAULT_CGI_PATH   = '/xmlrpc.cgi'
+    DEFAULT_PORT       = 443
+    DEFAULT_PROXY_HOST = nil
+    DEFAULT_PROXY_PORT = nil
+    DEFAULT_USE_SSL    = true
+    DEFAULT_TIMEOUT    = 120
+
+    def xmlrpc_client
+      @xmlrpc_client ||= ::XMLRPC::Client.new(
+                            bugzilla_request_hostname,
+                            DEFAULT_CGI_PATH,
+                            DEFAULT_PORT,
+                            DEFAULT_PROXY_HOST,
+                            DEFAULT_PROXY_PORT,
+                            username,
+                            password,
+                            DEFAULT_USE_SSL,
+                            timeout || DEFAULT_TIMEOUT)
     end
 
-    def fields(options = {})
-      xmlrpc_service.fields(options)
+    def to_xmlrpc_timestamp(ts)
+      return ts if ts.kind_of?(XMLRPC::DateTime)
+      return ts unless ts.respond_to?(:to_time)
+      ts = ts.to_time
+      XMLRPC::DateTime.new(ts.year, ts.month, ts.day, ts.hour, ts.min, ts.sec)
     end
 
-    def comments(options = {})
-      xmlrpc_service.comments(options)
+    # Build a printable representation of the xmlrcp command executed.
+    def command_string(cmd, params)
+      clean_params = Hash[params]
+      clean_params[:Bugzilla_password] = "********"
+      "xmlrpc_client.call(#{cmd}, #{clean_params})"
     end
 
-    def add_comment(bug_id, comment, options = {})
-      xmlrpc_service.add_comment(bug_id, comment, options)
-    end
+    def assemble_clone_description(existing_bz)
+      clone_description = " +++ This bug was initially created as a clone of Bug ##{existing_bz[:id]} +++ \n"
+      clone_description << existing_bz[:description.to_s]
 
-    def update(ids, options = {})
-      xmlrpc_service.update(ids, options)
+      clone_comment_is_private = false
+      existing_bz[:comments.to_s].each do |comment|
+        clone_description << "\n\n"
+        clone_description << "*" * 70
+        clone_description << "\nFollowing comment by %s on %s\n\n" %
+          [comment['author'], comment['creation_time'].to_time]
+        clone_description << "\n\n"
+        clone_description << comment['text']
+        clone_comment_is_private = true if comment['is_private']
+      end
+
+      [clone_description, clone_comment_is_private]
     end
   end
 end
