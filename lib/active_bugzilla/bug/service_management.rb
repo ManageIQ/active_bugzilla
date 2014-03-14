@@ -93,7 +93,8 @@ module ActiveBugzilla::Bug::ServiceManagement
       names.each do |name|
         ivar_name = "@#{name}"
         define_method(name) do
-          instance_variable_get(ivar_name) || instance_variable_set(ivar_name, raw_attribute(name))
+          return instance_variable_get(ivar_name) if instance_variable_defined?(ivar_name)
+          instance_variable_set(ivar_name, raw_attribute(name))
         end
 
         define_method("#{name}=") do |val|
