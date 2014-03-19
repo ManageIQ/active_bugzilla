@@ -64,7 +64,7 @@ module ActiveBugzilla::Bug::FlagsManagement
   end
 
   included do
-    define_attribute_methods :flags
+    define_attribute_methods [:flags]
 
     alias_method :changed_without_flags?, :changed?
     alias_method :changed?, :changed_with_flags?
