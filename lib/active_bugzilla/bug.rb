@@ -75,6 +75,9 @@ module ActiveBugzilla
       options[:include_fields] << :id unless options[:include_fields].include?(:id)
 
       search(options).collect do |bug_hash|
+        options[:include_fields].each do |field|
+          bug_hash[field] = nil unless bug_hash.key?(field)
+        end
         Bug.new(bug_hash)
       end
     end
