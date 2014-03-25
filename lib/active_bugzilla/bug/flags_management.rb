@@ -23,6 +23,14 @@ module ActiveBugzilla::Bug::FlagsManagement
     end
   end
 
+  def self.flags_from_raw_flags_data(raw_flags_data)
+    return {} if raw_flags_data.nil?
+    flag_objects = ActiveBugzilla::Flag.instantiate_from_raw_data(raw_flags_data)
+    flag_objects.each_with_object({}) do |flag, hash|
+      hash[flag.name] = flag.status
+    end
+  end
+
   def flags_raw_updates
     raw_updates = []
     flags.changes.each do |key, value|
