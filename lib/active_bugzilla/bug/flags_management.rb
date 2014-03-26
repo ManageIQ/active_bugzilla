@@ -4,6 +4,16 @@ require 'dirty_hashy'
 module ActiveBugzilla::Bug::FlagsManagement
   extend ActiveSupport::Concern
 
+  module ClassMethods
+    def flags_from_raw_flags_data(raw_flags_data)
+      return {} if raw_flags_data.nil?
+      flag_objects = ActiveBugzilla::Flag.instantiate_from_raw_data(raw_flags_data)
+      flag_objects.each_with_object({}) do |flag, hash|
+        hash[flag.name] = flag.status
+      end
+    end
+  end
+
   def flag_objects
     @flag_objects ||= ActiveBugzilla::Flag.instantiate_from_raw_data(raw_flags, @id)
   end

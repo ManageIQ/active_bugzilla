@@ -74,9 +74,12 @@ module ActiveBugzilla
       options[:include_fields] ||= []
       options[:include_fields] << :id unless options[:include_fields].include?(:id)
 
+      fields_to_include = options[:include_fields].dup
+
       search(options).collect do |bug_hash|
-        options[:include_fields].each do |field|
+        fields_to_include.each do |field|
           bug_hash[field] = nil unless bug_hash.key?(field)
+          bug_hash[field] = flags_from_raw_flags_data(bug_hash[field]) if field == :flags
         end
         Bug.new(bug_hash)
       end
