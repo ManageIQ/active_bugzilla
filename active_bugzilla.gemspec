@@ -5,9 +5,10 @@ require 'active_bugzilla/version'
 
 Gem::Specification.new do |spec|
   authors_hash = {
-    "Joe VLcek"      => "jvlcek@redhat.com",
-    "Jason Frey"     => "jfrey@redhat.com",
-    "Oleg Barenboim" => "chessbyte@gmail.com",
+    "Joe VLcek"        => "jvlcek@redhat.com",
+    "Jason Frey"       => "jfrey@redhat.com",
+    "Oleg Barenboim"   => "chessbyte@gmail.com",
+    "Alberto Bellotti" => "abellott@redhat.com"
   }
 
   spec.name          = "active_bugzilla"
