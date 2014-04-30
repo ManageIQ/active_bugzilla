@@ -54,7 +54,7 @@ module ActiveBugzilla
         if symbolized_name == :flags
           attributes[name] = flags_raw_updates
         else
-          attributes[name] = keywords_value(value) if symbolized_name == :keywords
+          attributes[name] = value if symbolized_name == :keywords
           @changed_attributes.delete(symbolized_name)
         end
       end
