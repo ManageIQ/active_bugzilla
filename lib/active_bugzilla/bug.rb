@@ -36,16 +36,25 @@ module ActiveBugzilla
       self
     end
 
+    def keywords_value(value)
+      # Default subcommand to keywords_set to simplify API
+      # and support user supplied Hash.
+      return HashWithIndifferentAccess.new(value) if value.is_a?(Hash)
+      HashWithIndifferentAccess.new({"keywords_set" => value}) # default to keywords_set
+    end
+
     def update_attributes(attributes)
       attributes.delete(:id)
 
       attributes.each do |name, value|
         symbolized_name = name.to_sym
         raise "Unknown Attribute #{name}" unless attribute_names.include?(symbolized_name)
+        value = keywords_value(value) if symbolized_name == :keywords
         public_send("#{name}=", value)
         if symbolized_name == :flags
           attributes[name] = flags_raw_updates
         else
+          attributes[name] = keywords_value(value) if symbolized_name == :keywords
           @changed_attributes.delete(symbolized_name)
         end
       end
