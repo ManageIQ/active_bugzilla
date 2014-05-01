@@ -40,7 +40,7 @@ module ActiveBugzilla
       # Default subcommand to keywords_set to simplify API
       # and support user supplied Hash.
       return HashWithIndifferentAccess.new(value) if value.is_a?(Hash)
-      HashWithIndifferentAccess.new({"keywords_set" => value}) # default to keywords_set
+      HashWithIndifferentAccess.new("keywords_set" => value)
     end
 
     def update_attributes(attributes)
