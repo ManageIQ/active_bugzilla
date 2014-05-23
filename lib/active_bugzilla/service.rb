@@ -58,12 +58,20 @@ module ActiveBugzilla
       @bugzilla_uri              = value
     end
 
-    def initialize(bugzilla_uri, username, password)
+    def https?
+      URI.parse(self.bugzilla_uri).scheme == 'https'
+    end
+
+    def initialize(bugzilla_uri, username, password, options={})
       raise ArgumentError, "username and password must be set" if username.nil? || password.nil?
 
       self.bugzilla_uri = bugzilla_uri
       self.username     = username
       self.password     = password
+
+      @options = DEFAULT_OPTIONS.merge(options)
+      @options[:use_ssl] ||= self.https?
+      @options[:port] ||= (@options[:use_ssl] ? 443 : 80)
     end
 
     def inspect
@@ -179,24 +187,22 @@ module ActiveBugzilla
 
     private
 
-    DEFAULT_CGI_PATH   = '/xmlrpc.cgi'
-    DEFAULT_PORT       = 443
-    DEFAULT_PROXY_HOST = nil
-    DEFAULT_PROXY_PORT = nil
-    DEFAULT_USE_SSL    = true
-    DEFAULT_TIMEOUT    = 120
+    DEFAULT_OPTIONS = {
+      :cgi_path => '/xmlrpc.cgi',
+      :timeout => 120
+    }
 
     def xmlrpc_client
       @xmlrpc_client ||= ::XMLRPC::Client.new(
                             bugzilla_request_hostname,
-                            DEFAULT_CGI_PATH,
-                            DEFAULT_PORT,
-                            DEFAULT_PROXY_HOST,
-                            DEFAULT_PROXY_PORT,
+                            @options[:cgi_path],
+                            @options[:port],
+                            @options[:proxy_host],
+                            @options[:proxy_port],
                             username,
                             password,
-                            DEFAULT_USE_SSL,
-                            timeout || DEFAULT_TIMEOUT)
+                            @options[:use_ssl],
+                            timeout || @options[:timeout])
     end
 
     def to_xmlrpc_timestamp(ts)
