@@ -80,19 +80,19 @@ module ActiveBugzilla
 
     # http://www.bugzilla.org/docs/4.4/en/html/api/Bugzilla/WebService/Bug.html#comments
     def comments(params = {})
-      execute('comments', params)
+      execute('Bug.comments', params)
     end
 
     # http://www.bugzilla.org/docs/4.4/en/html/api/Bugzilla/WebService/Bug.html#add_comment
     def add_comment(bug_id, comment, params = {})
       params[:id]      = bug_id
       params[:comment] = comment
-      execute('add_comment', params)["id"]
+      execute('Bug.add_comment', params)["id"]
     end
 
     # http://www.bugzilla.org/docs/4.4/en/html/api/Bugzilla/WebService/Bug.html#fields
     def fields(params = {})
-      execute('fields', params)['fields']
+      execute('Bug.fields', params)['fields']
     end
 
     # http://www.bugzilla.org/docs/4.4/en/html/api/Bugzilla/WebService/Bug.html#get
@@ -110,7 +110,7 @@ module ActiveBugzilla
 
       params[:ids] = bug_ids
 
-      results = execute('get', params)['bugs']
+      results = execute('Bug.get', params)['bugs']
       return [] if results.nil?
       results
     end
@@ -121,7 +121,7 @@ module ActiveBugzilla
       params[:last_change_time] &&= to_xmlrpc_timestamp(params[:last_change_time])
       params[:product]          ||= product if product
 
-      results = execute('search', params)['bugs']
+      results = execute('Bug.search', params)['bugs']
       return [] if results.nil?
       results
     end
@@ -129,12 +129,12 @@ module ActiveBugzilla
     # http://www.bugzilla.org/docs/4.4/en/html/api/Bugzilla/WebService/Bug.html#update
     def update(ids, params = {})
       params[:ids] = Array(ids)
-      execute('update', params)['bugs']
+      execute('Bug.update', params)['bugs']
     end
 
     # http://www.bugzilla.org/docs/4.4/en/html/api/Bugzilla/WebService/Bug.html#create
     def create(params)
-      execute('create', params)
+      execute('Bug.create', params)
     end
 
     # Clone of an existing bug
@@ -174,16 +174,14 @@ module ActiveBugzilla
       create(params)[:id.to_s]
     end
 
-    # Bypass python-bugzilla and use the xmlrpc API directly.
-    def execute(action, params)
-      cmd = "Bug.#{action}"
-
+    def execute(command, params)
       params[:Bugzilla_login]    ||= username
       params[:Bugzilla_password] ||= password
 
-      self.last_command = command_string(cmd, params)
-      xmlrpc_client.call(cmd, params)
+      self.last_command = command_string(command, params)
+      xmlrpc_client.call(command, params)
     end
+    alias_method :call, :execute
 
     private
 
