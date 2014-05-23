@@ -174,7 +174,6 @@ module ActiveBugzilla
       create(params)[:id.to_s]
     end
 
-    # Bypass python-bugzilla and use the xmlrpc API directly.
     def execute(command, params)
       params[:Bugzilla_login]    ||= username
       params[:Bugzilla_password] ||= password
