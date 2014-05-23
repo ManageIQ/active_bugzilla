@@ -59,10 +59,10 @@ module ActiveBugzilla
     end
 
     def https?
-      URI.parse(self.bugzilla_uri).scheme == 'https'
+      URI.parse(bugzilla_uri).scheme == 'https'
     end
 
-    def initialize(bugzilla_uri, username, password, options={})
+    def initialize(bugzilla_uri, username, password, options = {})
       raise ArgumentError, "username and password must be set" if username.nil? || password.nil?
 
       self.bugzilla_uri = bugzilla_uri
@@ -189,7 +189,7 @@ module ActiveBugzilla
 
     DEFAULT_OPTIONS = {
       :cgi_path => '/xmlrpc.cgi',
-      :timeout => 120
+      :timeout  => 120
     }
 
     def xmlrpc_client
