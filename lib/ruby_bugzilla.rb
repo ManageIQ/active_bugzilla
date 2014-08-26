@@ -1,3 +1,5 @@
+warn "[DEPRECATION] The RubyBugzilla gem has been renamed to ActiveBugzilla and will no longer be supported. Please switch to ActiveBugzilla as soon as possible."
+
 require 'fileutils'
 require 'linux_admin'
 require 'tempfile'
