@@ -13,9 +13,9 @@ Gem::Specification.new do |spec|
   spec.version       = RubyBugzilla::VERSION
   spec.authors       = authors_hash.keys
   spec.email         = authors_hash.values
-  spec.description   = %q{RubyBugzilla is a Ruby wrapper around the python-bugzilla CLI for easy access to the Bugzilla API.}
-  spec.summary       = %q{RubyBugzilla is a Ruby wrapper around the python-bugzilla CLI for easy access to the Bugzilla API.}
-  spec.homepage      = "http://github.com/ManageIQ/ruby_bugzilla"
+  spec.description   = %q{The RubyBugzilla gem has been renamed to ActiveBugzilla and will no longer be supported.  See https://rubygems.org/gems/active_bugzilla}
+  spec.summary       = %q{The RubyBugzilla gem has been renamed to ActiveBugzilla and will no longer be supported.  See https://rubygems.org/gems/active_bugzilla}
+  spec.homepage      = "http://github.com/ManageIQ/active_bugzilla"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files`.split($/)
@@ -29,4 +29,10 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "coveralls"
 
   spec.add_dependency "linux_admin", "~> 0.5.7"
+
+  spec.post_install_message = <<-MESSAGE
+  !    The RubyBugzilla gem has been renamed to ActiveBugzilla and will no longer be supported.
+  !    See: https://rubygems.org/gems/active_bugzilla
+  !    And: https://github.com/ManageIQ/active_bugzilla
+  MESSAGE
 end
