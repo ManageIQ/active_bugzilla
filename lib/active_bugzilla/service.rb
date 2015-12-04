@@ -191,16 +191,20 @@ module ActiveBugzilla
     }
 
     def xmlrpc_client
-      @xmlrpc_client ||= ::XMLRPC::Client.new(
-                            bugzilla_request_hostname,
-                            @options[:cgi_path],
-                            @options[:port],
-                            @options[:proxy_host],
-                            @options[:proxy_port],
-                            username,
-                            password,
-                            @options[:use_ssl],
-                            timeout || @options[:timeout])
+      @xmlrpc_client ||= begin
+        ::XMLRPC::Client.new(
+          bugzilla_request_hostname,
+          @options[:cgi_path],
+          @options[:port],
+          @options[:proxy_host],
+          @options[:proxy_port],
+          username,
+          password,
+          @options[:use_ssl],
+          timeout || @options[:timeout]).tap do |c|
+            c.set_parser(XMLRPC::XMLParser::XMLStreamParser.new)
+          end
+        end
     end
 
     def to_xmlrpc_timestamp(ts)
