@@ -8,6 +8,10 @@ describe ActiveBugzilla::Service do
       expect { bz }.to_not raise_error
     end
 
+    it "uses xmlparser's more performant stream parser" do
+      expect(bz.send(:xmlrpc_client).send(:parser).class.name).to eq "XMLRPC::XMLParser::XMLStreamParser"
+    end
+
     it "when bugzilla_uri is invalid" do
       expect { described_class.new("lalala", "", "") }.to raise_error(URI::BadURIError)
     end
@@ -29,7 +33,8 @@ describe ActiveBugzilla::Service do
     it "when the specified bug does not exist" do
       output = {}
 
-      allow(::XMLRPC::Client).to receive(:new).and_return(double('xmlrpc_client', :call => output))
+      allow(::XMLRPC::Client).to receive(:new)
+        .and_return(double('xmlrpc_client', :call => output, :set_parser => nil))
       matches = bz.get(94897099)
       expect(matches).to be_kind_of(Array)
       expect(matches).to be_empty
@@ -46,7 +51,8 @@ describe ActiveBugzilla::Service do
         ]
       }
 
-      allow(::XMLRPC::Client).to receive(:new).and_return(double('xmlrpc_client', :call => output))
+      allow(::XMLRPC::Client).to receive(:new)
+        .and_return(double('xmlrpc_client', :call => output, :set_parser => nil))
       existing_bz = bz.get("948972").first
 
       expect(bz.last_command).to include("Bug.get")
@@ -109,7 +115,8 @@ describe ActiveBugzilla::Service do
       }
 
       described_class.any_instance.stub(:get).and_return([existing_bz])
-      allow(::XMLRPC::Client).to receive(:new).and_return(double('xmlrpc_create', :call => output))
+      allow(::XMLRPC::Client).to receive(:new)
+        .and_return(double('xmlrpc_create', :call => output, :set_parser => nil))
       new_bz_id = bz.clone("948972")
 
       expect(bz.last_command).to include("Bug.create")
@@ -153,7 +160,8 @@ describe ActiveBugzilla::Service do
       }
 
       described_class.any_instance.stub(:get).and_return([existing_bz])
-      allow(::XMLRPC::Client).to receive(:new).and_return(double('xmlrpc_create', :call => output))
+      allow(::XMLRPC::Client).to receive(:new)
+        .and_return(double('xmlrpc_create', :call => output, :set_parser => nil))
       new_bz_id = bz.clone("948972", "assigned_to" => "Ham@NASA.gov", "target_release" => ["2.2.0"])
 
       expect(bz.last_command).to include("Bug.create")

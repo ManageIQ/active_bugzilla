@@ -34,4 +34,5 @@ Gem::Specification.new do |spec|
   spec.add_dependency "activemodel"
   spec.add_dependency "activesupport"
   spec.add_dependency "dirty_hashy"
+  spec.add_dependency "xmlparser"
 end
