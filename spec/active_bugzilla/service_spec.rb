@@ -75,8 +75,8 @@ describe ActiveBugzilla::Service do
     it "when the specified bug to clone does not exist" do
       output = {}
 
-      allow(::XMLRPC::Client).to receive(:new).and_return(double('xmlrpc_client', :call => output))
-      expect { bz.clone(94897099) }.to raise_error
+      allow(::XMLRPC::Client).to receive(:new).and_return(double('xmlrpc_client', :call => output, :set_parser => nil))
+      expect { bz.clone(94897099) }.to raise_error NoMethodError
     end
 
     it "when producing valid output" do
