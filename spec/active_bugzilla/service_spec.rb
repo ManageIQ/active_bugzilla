@@ -114,7 +114,7 @@ describe ActiveBugzilla::Service do
         ]
       }
 
-      described_class.any_instance.stub(:get).and_return([existing_bz])
+      expect(bz).to receive(:get).and_return([existing_bz])
       allow(::XMLRPC::Client).to receive(:new)
         .and_return(double('xmlrpc_create', :call => output, :set_parser => nil))
       new_bz_id = bz.clone("948972")
@@ -159,7 +159,7 @@ describe ActiveBugzilla::Service do
         ]
       }
 
-      described_class.any_instance.stub(:get).and_return([existing_bz])
+      expect(bz).to receive(:get).and_return([existing_bz])
       allow(::XMLRPC::Client).to receive(:new)
         .and_return(double('xmlrpc_create', :call => output, :set_parser => nil))
       new_bz_id = bz.clone("948972", "assigned_to" => "Ham@NASA.gov", "target_release" => ["2.2.0"])
