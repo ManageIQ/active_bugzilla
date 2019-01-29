@@ -75,8 +75,8 @@ describe ActiveBugzilla::Service do
     it "when the specified bug to clone does not exist" do
       output = {}
 
-      allow(::XMLRPC::Client).to receive(:new).and_return(double('xmlrpc_client', :call => output))
-      expect { bz.clone(94897099) }.to raise_error
+      allow(::XMLRPC::Client).to receive(:new).and_return(double('xmlrpc_client', :call => output, :set_parser => nil))
+      expect { bz.clone(94897099) }.to raise_error NoMethodError
     end
 
     it "when producing valid output" do
@@ -114,7 +114,7 @@ describe ActiveBugzilla::Service do
         ]
       }
 
-      described_class.any_instance.stub(:get).and_return([existing_bz])
+      expect(bz).to receive(:get).and_return([existing_bz])
       allow(::XMLRPC::Client).to receive(:new)
         .and_return(double('xmlrpc_create', :call => output, :set_parser => nil))
       new_bz_id = bz.clone("948972")
@@ -159,7 +159,7 @@ describe ActiveBugzilla::Service do
         ]
       }
 
-      described_class.any_instance.stub(:get).and_return([existing_bz])
+      expect(bz).to receive(:get).and_return([existing_bz])
       allow(::XMLRPC::Client).to receive(:new)
         .and_return(double('xmlrpc_create', :call => output, :set_parser => nil))
       new_bz_id = bz.clone("948972", "assigned_to" => "Ham@NASA.gov", "target_release" => ["2.2.0"])
