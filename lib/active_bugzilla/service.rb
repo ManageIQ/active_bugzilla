@@ -153,6 +153,8 @@ module ActiveBugzilla
 
       existing_bz = get(bug_id, :include_fields => CLONE_FIELDS).first
 
+      raise ActiveBugzilla::Bug::NotFound.new(bug_id) if existing_bz.nil?
+
       clone_description, clone_comment_is_private = assemble_clone_description(existing_bz)
 
       params = {}

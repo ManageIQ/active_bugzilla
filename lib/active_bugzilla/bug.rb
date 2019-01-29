@@ -2,6 +2,16 @@ require 'active_model'
 
 module ActiveBugzilla
   class Bug < Base
+
+    # Error class for when a BZ can't be found
+    class NotFound < StandardError
+      def initialize(id=nil)
+        msg = nil
+        msg = "no BZ with id #{id} found!" if id
+        super(msg)
+      end
+    end
+
     include ActiveModel::Validations
     include ActiveModel::Dirty
 
